@@ -5,6 +5,7 @@ buildscript {
         // App dependencies
         app_compat_version = "1.2.0"
         atsl_junit_version = "1.1.2"
+        cardview_version = "1.0.0"
         constraint_layout_version = "2.0.4"
         dagger_version = "2.29.1"
         espresso_version = "3.3.0"

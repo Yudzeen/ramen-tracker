@@ -3,14 +3,19 @@ package ebj.yujinkun.ramentracker.ui.detail;
 import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -51,18 +56,44 @@ public class RamenDetailFragment extends Fragment {
         });
     }
 
-    private void handleSaveLoading() {
-        Timber.i("Saving...");
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        setupToolbar();
     }
 
-    private void handleSaveSuccess(Ramen ramen) {
-        Timber.i("Save success: %s", ramen);
-        Toast.makeText(requireContext(), "Saved", Toast.LENGTH_SHORT).show();
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        inflater.inflate(R.menu.action_bar_ramen_detail, menu);
     }
 
-    private void handleSaveError(Throwable error) {
-        Timber.e(error, "Save error");
-        Toast.makeText(requireContext(), "Save error", Toast.LENGTH_SHORT).show();
+    @Override
+    public void onPrepareOptionsMenu(@NonNull Menu menu) {
+        menu.getItem(0).setIcon(viewModel.isFavorite() ?
+                R.drawable.ic_favorite : R.drawable.ic_favorite_border);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.action_favorite) {
+            handleFavoriteClicked();
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void parseArguments(Bundle args) {
+        Ramen ramen = RamenDetailFragmentArgs.fromBundle(args).getRamen();
+        viewModel.initValues(ramen);
+    }
+
+    private void setupToolbar() {
+        setHasOptionsMenu(true);
+        AppCompatActivity activity = (AppCompatActivity) requireActivity();
+        activity.setSupportActionBar(binding.toolbar);
     }
 
     private void initViews() {
@@ -70,21 +101,13 @@ public class RamenDetailFragment extends Fragment {
         initLocationEditText();
         initRamenNameEditText();
         initCommentsEditText();
-
-        binding.date.setText(DateUtils.formatDate(viewModel.getDate(),
-                DateUtils.DATE_FORMAT_DEFAULT, DateUtils.DATE_FORMAT_DATE_PRETTY));
-        binding.date.setOnClickListener(v -> handleDateClicked());
-
-        binding.favorite.setImageResource(viewModel.isFavorite() ?
-                R.drawable.ic_favorite : R.drawable.ic_favorite_border);
-        binding.favorite.setOnClickListener(v -> handleFavoriteClicked());
-
+        initDateField();
         binding.fab.setOnClickListener(view -> viewModel.save());
     }
 
     private void initShopEditText() {
-        binding.shop.setText(viewModel.getShop());
-        binding.shop.addTextChangedListener(new TextWatcher() {
+        binding.shop.getEditText().setText(viewModel.getShop());
+        binding.shop.getEditText().addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
@@ -103,8 +126,8 @@ public class RamenDetailFragment extends Fragment {
     }
 
     private void initLocationEditText() {
-        binding.location.setText(viewModel.getLocation());
-        binding.location.addTextChangedListener(new TextWatcher() {
+        binding.location.getEditText().setText(viewModel.getLocation());
+        binding.location.getEditText().addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
@@ -123,8 +146,8 @@ public class RamenDetailFragment extends Fragment {
     }
 
     private void initRamenNameEditText() {
-        binding.ramenName.setText(viewModel.getRamenName());
-        binding.ramenName.addTextChangedListener(new TextWatcher() {
+        binding.ramenName.getEditText().setText(viewModel.getRamenName());
+        binding.ramenName.getEditText().addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
@@ -143,8 +166,8 @@ public class RamenDetailFragment extends Fragment {
     }
 
     private void initCommentsEditText() {
-        binding.comments.setText(viewModel.getComments());
-        binding.comments.addTextChangedListener(new TextWatcher() {
+        binding.comments.getEditText().setText(viewModel.getComments());
+        binding.comments.getEditText().addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
@@ -162,6 +185,13 @@ public class RamenDetailFragment extends Fragment {
         });
     }
 
+    private void initDateField() {
+        binding.date.getEditText().setText(DateUtils.formatDate(viewModel.getDate(),
+                DateUtils.DATE_FORMAT_DEFAULT, DateUtils.DATE_FORMAT_DATE_PRETTY));
+        binding.date.getEditText().setInputType(InputType.TYPE_NULL);
+        binding.date.getEditText().setOnClickListener(v -> handleDateClicked());
+    }
+
     private void handleDateClicked() {
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(DateUtils.getDate(viewModel.getDate()));
@@ -173,18 +203,27 @@ public class RamenDetailFragment extends Fragment {
 
     private void handleDatePicked(int year, int month, int dayOfMonth) {
         viewModel.setDate(DateUtils.formatDate(year, month, dayOfMonth));
-        binding.date.setText(DateUtils.formatDate(viewModel.getDate(),
+        binding.date.getEditText().setText(DateUtils.formatDate(viewModel.getDate(),
                 DateUtils.DATE_FORMAT_DEFAULT, DateUtils.DATE_FORMAT_DATE_PRETTY));
     }
 
     private void handleFavoriteClicked() {
         viewModel.setFavorite(!viewModel.isFavorite());
-        binding.favorite.setImageResource(viewModel.isFavorite() ?
-                R.drawable.ic_favorite : R.drawable.ic_favorite_border);
+        requireActivity().invalidateOptionsMenu();
     }
 
-    private void parseArguments(Bundle args) {
-        Ramen ramen = RamenDetailFragmentArgs.fromBundle(args).getRamen();
-        viewModel.initValues(ramen);
+    private void handleSaveLoading() {
+        Timber.i("Saving...");
     }
+
+    private void handleSaveSuccess(Ramen ramen) {
+        Timber.i("Save success: %s", ramen);
+        Toast.makeText(requireContext(), "Saved", Toast.LENGTH_SHORT).show();
+    }
+
+    private void handleSaveError(Throwable error) {
+        Timber.e(error, "Save error");
+        Toast.makeText(requireContext(), "Save error", Toast.LENGTH_SHORT).show();
+    }
+
 }

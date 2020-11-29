@@ -14,6 +14,7 @@ import java.util.List;
 import ebj.yujinkun.ramentracker.R;
 import ebj.yujinkun.ramentracker.databinding.ListItemRamenBinding;
 import ebj.yujinkun.ramentracker.models.Ramen;
+import ebj.yujinkun.ramentracker.util.DateUtils;
 import timber.log.Timber;
 
 public class RamenAdapter extends RecyclerView.Adapter<RamenAdapter.ViewHolder> {
@@ -78,6 +79,8 @@ public class RamenAdapter extends RecyclerView.Adapter<RamenAdapter.ViewHolder> 
             binding.ramenName.setText(ramen.getName());
             binding.shop.setText(ramen.getShop());
             binding.location.setText(ramen.getLocation());
+            binding.date.setText(DateUtils.formatDate(ramen.getDate(),
+                    DateUtils.DATE_FORMAT_DEFAULT, DateUtils.DATE_FORMAT_DATE_PRETTY));
             binding.favorite.setImageResource(ramen.isFavorite() ? R.drawable.ic_favorite :
                     R.drawable.ic_favorite_border);
         }
