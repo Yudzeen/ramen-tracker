@@ -2,8 +2,6 @@ package ebj.yujinkun.ramentracker.data;
 
 import java.util.List;
 
-import javax.inject.Inject;
-
 import ebj.yujinkun.ramentracker.data.room.AppDatabase;
 import ebj.yujinkun.ramentracker.data.room.RamenDao;
 import ebj.yujinkun.ramentracker.models.Ramen;
@@ -14,7 +12,6 @@ public class RamenRepositoryImpl implements RamenRepository {
 
     private final RamenDao ramenDao;
 
-    @Inject
     public RamenRepositoryImpl(AppDatabase appDatabase) {
         this.ramenDao = appDatabase.ramenDao();
     }

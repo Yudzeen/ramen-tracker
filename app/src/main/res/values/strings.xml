@@ -10,4 +10,6 @@
     <string name="location_hint">Location</string>
     <string name="ramen_name_hint">Ramen Name</string>
     <string name="save">Save</string>
+    <string name="undo">Undo</string>
+    <string name="entry_deleted">Entry deleted</string>
 </resources>

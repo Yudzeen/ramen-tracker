@@ -48,6 +48,15 @@ public class RamenListViewModel extends BaseViewModel {
                 .subscribe(ramenListLiveData::setValue));
     }
 
+    public void save(Ramen ramen) {
+        bind(ramenRepository.save(ramen)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnSubscribe(disposable -> saveRamenLiveData.setValue(Resource.loading()))
+                .subscribe(() -> saveRamenLiveData.setValue(Resource.success(ramen)),
+                        throwable -> saveRamenLiveData.setValue(Resource.error(throwable))));
+    }
+
     public void delete(Ramen ramen) {
         bind(ramenRepository.delete(ramen)
                 .subscribeOn(Schedulers.io())

@@ -15,7 +15,7 @@ import io.reactivex.Flowable;
 @Dao
 public interface RamenDao {
 
-    @Query("SELECT * FROM ramen")
+    @Query("SELECT * FROM ramen ORDER BY date DESC")
     Flowable<List<Ramen>> getAllRamen();
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
