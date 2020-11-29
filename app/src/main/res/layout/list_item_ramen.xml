@@ -13,7 +13,7 @@
         android:layout_marginStart="8dp"
         android:contentDescription="@string/ramen"
         android:padding="8dp"
-        android:src="@drawable/ic_fastfood"
+        android:src="@drawable/ic_ramen"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
