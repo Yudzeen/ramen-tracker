@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph_main"
+    app:startDestination="@id/ramenListFragment">
+
+    <fragment
+        android:id="@+id/ramenListFragment"
+        android:name="ebj.yujinkun.ramentracker.ui.list.RamenListFragment"
+        android:label="fragment_ramen_list"
+        tools:layout="@layout/fragment_ramen_list" >
+        <action
+            android:id="@+id/action_ramenList_to_ramenDetail"
+            app:destination="@id/ramenDetailFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/ramenDetailFragment"
+        android:name="ebj.yujinkun.ramentracker.ui.detail.RamenDetailFragment"
+        android:label="fragment_ramen_detail"
+        tools:layout="@layout/fragment_ramen_detail" >
+        <argument
+            android:name="ramen"
+            android:defaultValue="@null"
+            app:argType="ebj.yujinkun.ramentracker.models.Ramen"
+            app:nullable="true" />
+    </fragment>
+</navigation>

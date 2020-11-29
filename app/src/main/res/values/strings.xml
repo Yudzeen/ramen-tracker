@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">Ramen Tracker</string>
+
+    <string name="add">Add</string>
+    <string name="ramen">Ramen</string>
+    <string name="at_sign">\@</string>
+    <string name="favorite">Favorite</string>
+    <string name="image">Image</string>
+    <string name="shop_hint">Ramen Shop</string>
+    <string name="location_hint">Location</string>
+    <string name="ramen_name_hint">Ramen Name</string>
+    <string name="save">Save</string>
+</resources>
