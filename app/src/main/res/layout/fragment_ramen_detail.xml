@@ -40,8 +40,6 @@
             android:id="@+id/location"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignTop="@id/shop"
-            android:layout_alignParentStart="true"
             android:layout_marginStart="16dp"
             android:hint="@string/location_hint"
             android:inputType="textCapWords"
@@ -55,8 +53,6 @@
             android:id="@+id/ramenName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignTop="@id/location"
-            android:layout_alignParentStart="true"
             android:layout_marginStart="16dp"
             android:hint="@string/ramen_name_hint"
             android:inputType="textCapWords"
@@ -64,6 +60,20 @@
             android:textSize="16sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/location"
+            tools:text="Tonkotsu Ramen" />
+
+        <EditText
+            android:id="@+id/comments"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:hint="@string/comments_hint"
+            android:inputType="textCapSentences"
+            android:textColor="@color/black"
+            android:textSize="16sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/ramenName"
             tools:text="Tonkotsu Ramen" />
 
         <ImageView

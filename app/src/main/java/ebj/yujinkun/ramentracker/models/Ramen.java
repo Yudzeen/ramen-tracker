@@ -4,6 +4,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.room.Entity;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
@@ -20,14 +21,16 @@ public class Ramen implements Parcelable {
     private final String shop;
     private final String location;
     private final String date;
+    private final String comments;
     private final boolean favorite;
 
-    public Ramen(@NonNull String id, String name, String shop, String location, String date, boolean favorite) {
+    public Ramen(@NonNull String id, String name, String shop, String location, String date, String comments, boolean favorite) {
         this.id = id;
         this.name = name;
         this.shop = shop;
         this.location = location;
         this.date = date;
+        this.comments = comments;
         this.favorite = favorite;
     }
 
@@ -37,6 +40,7 @@ public class Ramen implements Parcelable {
         shop = in.readString();
         location = in.readString();
         date = in.readString();
+        comments = in.readString();
         favorite = in.readInt() == 1;
     }
 
@@ -72,6 +76,10 @@ public class Ramen implements Parcelable {
         return date;
     }
 
+    public String getComments() {
+        return comments;
+    }
+
     public boolean isFavorite() {
         return favorite;
     }
@@ -86,15 +94,15 @@ public class Ramen implements Parcelable {
                 Objects.equals(name, ramen.name) &&
                 Objects.equals(shop, ramen.shop) &&
                 Objects.equals(location, ramen.location) &&
-                Objects.equals(date, ramen.date);
+                Objects.equals(date, ramen.date) &&
+                Objects.equals(comments, ramen.comments);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, shop, location, date, favorite);
+        return Objects.hash(id, name, shop, location, date, comments, favorite);
     }
 
-    @NonNull
     @Override
     public String toString() {
         return "Ramen{" +
@@ -103,6 +111,7 @@ public class Ramen implements Parcelable {
                 ", shop='" + shop + '\'' +
                 ", location='" + location + '\'' +
                 ", date='" + date + '\'' +
+                ", comments='" + comments + '\'' +
                 ", favorite=" + favorite +
                 '}';
     }
@@ -128,6 +137,7 @@ public class Ramen implements Parcelable {
         private String shop;
         private String location;
         private String date;
+        private String comments;
         private boolean favorite;
 
         public Builder setId(String id) {
@@ -155,13 +165,18 @@ public class Ramen implements Parcelable {
             return this;
         }
 
+        public Builder setComments(String comments) {
+            this.comments = comments;
+            return this;
+        }
+
         public Builder setFavorite(boolean favorite) {
             this.favorite = favorite;
             return this;
         }
 
         public Ramen build() {
-            return new Ramen(id, name, shop, location, date, favorite);
+            return new Ramen(id, name, shop, location, date, comments, favorite);
         }
     }
 }

@@ -24,6 +24,7 @@ public class RamenDetailViewModel extends BaseViewModel {
     private String shop;
     private String location;
     private String date;
+    private String comments;
     private boolean favorite;
 
     private final MutableLiveData<Resource<Ramen>> saveRamenLiveData = new MutableLiveData<>();
@@ -39,6 +40,7 @@ public class RamenDetailViewModel extends BaseViewModel {
             shop = ramen.getShop();
             location = ramen.getLocation();
             date = ramen.getDate();
+            comments = ramen.getComments();
             favorite = ramen.isFavorite();
         } else {
             id = UUID.randomUUID().toString();
@@ -46,6 +48,7 @@ public class RamenDetailViewModel extends BaseViewModel {
             shop = "";
             location = "";
             date = DateUtils.getCurrentDate();
+            comments = "";
             favorite = false;
         }
     }
@@ -90,6 +93,14 @@ public class RamenDetailViewModel extends BaseViewModel {
         this.date = date;
     }
 
+    public String getComments() {
+        return comments;
+    }
+
+    public void setComments(String comments) {
+        this.comments = comments;
+    }
+
     public boolean isFavorite() {
         return favorite;
     }
@@ -105,6 +116,7 @@ public class RamenDetailViewModel extends BaseViewModel {
                 .setShop(shop)
                 .setLocation(location)
                 .setDate(date)
+                .setComments(comments)
                 .setFavorite(favorite)
                 .build();
         save(ramen);

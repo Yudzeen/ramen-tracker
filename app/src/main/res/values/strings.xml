@@ -12,4 +12,5 @@
     <string name="save">Save</string>
     <string name="undo">Undo</string>
     <string name="entry_deleted">Entry deleted</string>
+    <string name="comments_hint">Comments</string>
 </resources>

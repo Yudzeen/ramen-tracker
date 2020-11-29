@@ -69,6 +69,7 @@ public class RamenDetailFragment extends Fragment {
         initShopEditText();
         initLocationEditText();
         initRamenNameEditText();
+        initCommentsEditText();
 
         binding.date.setText(DateUtils.formatDate(viewModel.getDate(),
                 DateUtils.DATE_FORMAT_DEFAULT, DateUtils.DATE_FORMAT_DATE_PRETTY));
@@ -137,6 +138,26 @@ public class RamenDetailFragment extends Fragment {
             @Override
             public void afterTextChanged(Editable s) {
                 viewModel.setRamenName(s.toString());
+            }
+        });
+    }
+
+    private void initCommentsEditText() {
+        binding.comments.setText(viewModel.getComments());
+        binding.comments.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                viewModel.setComments(s.toString());
             }
         });
     }

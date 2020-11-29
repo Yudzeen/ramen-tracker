@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "f3bf54fbf3a7e98e74b13e3128cf3444",
+    "identityHash": "e4bf2a6ec175090e9e06bae42883dff7",
     "entities": [
       {
         "tableName": "ramen",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT, `shop` TEXT, `location` TEXT, `date` TEXT, `favorite` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT, `shop` TEXT, `location` TEXT, `date` TEXT, `comments` TEXT, `favorite` INTEGER NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -39,6 +39,12 @@
             "notNull": false
           },
           {
+            "fieldPath": "comments",
+            "columnName": "comments",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
             "fieldPath": "favorite",
             "columnName": "favorite",
             "affinity": "INTEGER",
@@ -67,7 +73,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f3bf54fbf3a7e98e74b13e3128cf3444')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'e4bf2a6ec175090e9e06bae42883dff7')"
     ]
   }
 }
