@@ -19,6 +19,7 @@ import io.reactivex.schedulers.Schedulers;
 public class RamenDetailViewModel extends BaseViewModel {
 
     private final RamenRepository ramenRepository;
+    private Ramen ramen;
     private String id;
     private String ramenName;
     private String shop;
@@ -28,6 +29,7 @@ public class RamenDetailViewModel extends BaseViewModel {
     private boolean favorite;
 
     private final MutableLiveData<Resource<Ramen>> saveRamenLiveData = new MutableLiveData<>();
+    private final MutableLiveData<Resource<Ramen>> deleteRamenLiveData = new MutableLiveData<>();
 
     public RamenDetailViewModel(RamenRepository ramenRepository) {
         this.ramenRepository = ramenRepository;
@@ -35,6 +37,7 @@ public class RamenDetailViewModel extends BaseViewModel {
 
     public void initValues(Ramen ramen) {
         if (ramen != null) {
+            this.ramen = ramen;
             id = ramen.getId();
             ramenName = ramen.getName();
             shop = ramen.getShop();
@@ -51,6 +54,10 @@ public class RamenDetailViewModel extends BaseViewModel {
             comments = "";
             favorite = false;
         }
+    }
+
+    public Ramen getRamen() {
+        return ramen;
     }
 
     public String getId() {
@@ -119,20 +126,29 @@ public class RamenDetailViewModel extends BaseViewModel {
                 .setComments(comments)
                 .setFavorite(favorite)
                 .build();
-        save(ramen);
-    }
-
-    public LiveData<Resource<Ramen>> getSaveRamenLiveData() {
-        return saveRamenLiveData;
-    }
-
-    private void save(Ramen ramen) {
         bind(ramenRepository.save(ramen)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnSubscribe(disposable -> saveRamenLiveData.setValue(Resource.loading()))
                 .subscribe(() -> saveRamenLiveData.setValue(Resource.success(ramen)),
                         throwable -> saveRamenLiveData.setValue(Resource.error(throwable))));
+    }
+
+    public LiveData<Resource<Ramen>> getSaveRamenLiveData() {
+        return saveRamenLiveData;
+    }
+
+    public void delete() {
+        bind(ramenRepository.delete(ramen)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnSubscribe(disposable -> deleteRamenLiveData.setValue(Resource.loading()))
+                .subscribe(() -> deleteRamenLiveData.setValue(Resource.success(ramen)),
+                        throwable -> deleteRamenLiveData.setValue(Resource.error(throwable))));
+    }
+
+    public LiveData<Resource<Ramen>> getDeleteRamenLiveData() {
+        return deleteRamenLiveData;
     }
 
     public static class Factory implements ViewModelProvider.Factory {

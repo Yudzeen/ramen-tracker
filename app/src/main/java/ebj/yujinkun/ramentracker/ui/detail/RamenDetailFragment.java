@@ -18,6 +18,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.fragment.NavHostFragment;
 
 import java.util.Calendar;
 
@@ -54,6 +55,12 @@ public class RamenDetailFragment extends Fragment {
             resource.doOnSuccess(this::handleSaveSuccess);
             resource.doOnError(this::handleSaveError);
         });
+
+        viewModel.getDeleteRamenLiveData().observe(getViewLifecycleOwner(), resource -> {
+            resource.doOnLoading(this::handleDeleteLoading);
+            resource.doOnSuccess(this::handleDeleteSuccess);
+            resource.doOnError(this::handleDeleteError);
+        });
     }
 
     @Override
@@ -69,8 +76,9 @@ public class RamenDetailFragment extends Fragment {
 
     @Override
     public void onPrepareOptionsMenu(@NonNull Menu menu) {
-        menu.getItem(0).setIcon(viewModel.isFavorite() ?
+        menu.findItem(R.id.action_favorite).setIcon(viewModel.isFavorite() ?
                 R.drawable.ic_favorite : R.drawable.ic_favorite_border);
+        menu.findItem(R.id.action_delete).setVisible(viewModel.getRamen() != null);
     }
 
     @Override
@@ -78,7 +86,12 @@ public class RamenDetailFragment extends Fragment {
         int id = item.getItemId();
 
         if (id == R.id.action_favorite) {
-            handleFavoriteClicked();
+            handleFavoriteAction();
+            return true;
+        }
+
+        if (id == R.id.action_delete) {
+            handleDeleteAction();
             return true;
         }
 
@@ -207,9 +220,27 @@ public class RamenDetailFragment extends Fragment {
                 DateUtils.DATE_FORMAT_DEFAULT, DateUtils.DATE_FORMAT_DATE_PRETTY));
     }
 
-    private void handleFavoriteClicked() {
+    private void handleFavoriteAction() {
         viewModel.setFavorite(!viewModel.isFavorite());
         requireActivity().invalidateOptionsMenu();
+    }
+
+    private void handleDeleteAction() {
+        viewModel.delete();
+    }
+
+    private void handleDeleteLoading() {
+        Timber.i("Deleting");
+    }
+
+    private void handleDeleteSuccess(Ramen ramen) {
+        Timber.i("Delete success: %s", ramen);
+        NavHostFragment.findNavController(this).navigateUp();
+    }
+
+    private void handleDeleteError(Throwable error) {
+        Timber.e(error, "Delete error");
+        Toast.makeText(requireContext(), "Delete error", Toast.LENGTH_SHORT).show();
     }
 
     private void handleSaveLoading() {
