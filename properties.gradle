@@ -1,0 +1,4 @@
+ext {
+    // Add your imgur credentials here
+    IMGUR_CLIENT_ID = ""
+}
