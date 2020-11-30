@@ -19,6 +19,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
+import androidx.navigation.ui.NavigationUI;
 
 import java.util.Calendar;
 
@@ -106,7 +107,9 @@ public class RamenDetailFragment extends Fragment {
     private void setupToolbar() {
         setHasOptionsMenu(true);
         AppCompatActivity activity = (AppCompatActivity) requireActivity();
+        binding.toolbar.setTitle("");
         activity.setSupportActionBar(binding.toolbar);
+        NavigationUI.setupWithNavController(binding.toolbar, NavHostFragment.findNavController(this));
     }
 
     private void initViews() {
