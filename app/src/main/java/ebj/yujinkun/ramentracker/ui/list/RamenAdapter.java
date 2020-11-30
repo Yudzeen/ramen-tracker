@@ -81,8 +81,7 @@ public class RamenAdapter extends RecyclerView.Adapter<RamenAdapter.ViewHolder> 
             binding.location.setText(ramen.getLocation());
             binding.date.setText(DateUtils.formatDate(ramen.getDate(),
                     DateUtils.DATE_FORMAT_DEFAULT, DateUtils.DATE_FORMAT_DATE_PRETTY));
-            binding.favorite.setImageResource(ramen.isFavorite() ? R.drawable.ic_favorite :
-                    R.drawable.ic_favorite_border);
+            binding.favorite.setVisibility(ramen.isFavorite() ? View.VISIBLE : View.GONE);
         }
     }
 
