@@ -11,26 +11,15 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <ImageView
-            android:id="@+id/ramenImage"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_margin="16dp"
-            android:contentDescription="@string/ramen"
-            android:src="@drawable/ic_ramen"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
+            android:layout_marginStart="8dp"
             android:orientation="vertical"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/ramenImage"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
             <LinearLayout
@@ -40,8 +29,8 @@
                 android:orientation="horizontal">
 
                 <TextView
-                    style="@style/TextAppearance.MaterialComponents.Subtitle2"
                     android:id="@+id/shop"
+                    style="@style/TextAppearance.MaterialComponents.Subtitle2"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     tools:text="Ramen Shop" />
@@ -55,8 +44,8 @@
                     android:text="@string/at_sign" />
 
                 <TextView
-                    style="@style/TextAppearance.MaterialComponents.Subtitle2"
                     android:id="@+id/location"
+                    style="@style/TextAppearance.MaterialComponents.Subtitle2"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     tools:text="Home" />
@@ -64,8 +53,8 @@
             </LinearLayout>
 
             <TextView
-                style="@style/TextAppearance.MaterialComponents.Headline6"
                 android:id="@+id/ramenName"
+                style="@style/TextAppearance.MaterialComponents.Headline6"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 tools:text="Tonkotsu Ramen" />
