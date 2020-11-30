@@ -1,5 +1,6 @@
 package ebj.yujinkun.ramentracker.ui.detail;
 
+import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.text.Editable;
@@ -13,15 +14,17 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
-import androidx.navigation.ui.NavigationUI;
 
 import java.util.Calendar;
+import java.util.Objects;
 
 import ebj.yujinkun.ramentracker.R;
 import ebj.yujinkun.ramentracker.data.RamenRepository;
@@ -35,6 +38,17 @@ public class RamenDetailFragment extends Fragment {
 
     private FragmentRamenDetailBinding binding;
     private RamenDetailViewModel viewModel;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        requireActivity().getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                onBackPressed();
+            }
+        });
+    }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
@@ -89,6 +103,11 @@ public class RamenDetailFragment extends Fragment {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
 
+        if (id == android.R.id.home) {
+            onBackPressed();
+            return true;
+        }
+
         if (id == R.id.action_favorite) {
             handleFavoriteAction();
             return true;
@@ -110,9 +129,10 @@ public class RamenDetailFragment extends Fragment {
     private void setupToolbar() {
         setHasOptionsMenu(true);
         AppCompatActivity activity = (AppCompatActivity) requireActivity();
-        binding.toolbar.setTitle("");
         activity.setSupportActionBar(binding.toolbar);
-        NavigationUI.setupWithNavController(binding.toolbar, NavHostFragment.findNavController(this));
+        ActionBar actionBar = Objects.requireNonNull(activity.getSupportActionBar());
+        actionBar.setDisplayHomeAsUpEnabled(true);
+        actionBar.setTitle("");
     }
 
     private void initViews() {
@@ -266,6 +286,29 @@ public class RamenDetailFragment extends Fragment {
     private void handleSaveError(Throwable error) {
         Timber.e(error, "Save error");
         Toast.makeText(requireContext(), "Save error", Toast.LENGTH_SHORT).show();
+    }
+
+    private void onBackPressed() {
+        boolean contentsUpdated = Objects.requireNonNull(viewModel.getContentsUpdatedLiveData().getValue());
+        if (contentsUpdated) {
+            showConfirmationDialog();
+        } else {
+            navigateUp();
+        }
+    }
+
+    private void showConfirmationDialog() {
+        AlertDialog alertDialog = new AlertDialog.Builder(getActivity())
+                .setMessage("Are you sure you want to discard your changes?")
+                .setPositiveButton("Yes", (dialog, which) ->
+                        navigateUp())
+                .setNegativeButton("No", (dialog, which) -> dialog.dismiss())
+                .create();
+        alertDialog.show();
+    }
+
+    private void navigateUp() {
+        NavHostFragment.findNavController(this).navigateUp();
     }
 
 }
