@@ -1,11 +1,14 @@
 package ebj.yujinkun.ramentracker.ui.detail;
 
+import android.text.TextUtils;
+
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
+import java.util.Objects;
 import java.util.UUID;
 
 import ebj.yujinkun.ramentracker.data.RamenRepository;
@@ -31,6 +34,8 @@ public class RamenDetailViewModel extends BaseViewModel {
     private final MutableLiveData<Resource<Ramen>> saveRamenLiveData = new MutableLiveData<>();
     private final MutableLiveData<Resource<Ramen>> deleteRamenLiveData = new MutableLiveData<>();
 
+    private final MutableLiveData<Boolean> contentsUpdatedLiveData = new MutableLiveData<>();
+
     public RamenDetailViewModel(RamenRepository ramenRepository) {
         this.ramenRepository = ramenRepository;
     }
@@ -54,6 +59,7 @@ public class RamenDetailViewModel extends BaseViewModel {
             comments = "";
             favorite = false;
         }
+        contentsUpdatedLiveData.setValue(false);
     }
 
     public Ramen getRamen() {
@@ -66,6 +72,7 @@ public class RamenDetailViewModel extends BaseViewModel {
 
     public void setId(String id) {
         this.id = id;
+        onDataChanged();
     }
 
     public String getRamenName() {
@@ -74,6 +81,7 @@ public class RamenDetailViewModel extends BaseViewModel {
 
     public void setRamenName(String ramenName) {
         this.ramenName = ramenName;
+        onDataChanged();
     }
 
     public String getShop() {
@@ -82,6 +90,7 @@ public class RamenDetailViewModel extends BaseViewModel {
 
     public void setShop(String shop) {
         this.shop = shop;
+        onDataChanged();
     }
 
     public String getLocation() {
@@ -90,6 +99,7 @@ public class RamenDetailViewModel extends BaseViewModel {
 
     public void setLocation(String location) {
         this.location = location;
+        onDataChanged();
     }
 
     public String getDate() {
@@ -98,6 +108,7 @@ public class RamenDetailViewModel extends BaseViewModel {
 
     public void setDate(String date) {
         this.date = date;
+        onDataChanged();
     }
 
     public String getComments() {
@@ -106,6 +117,7 @@ public class RamenDetailViewModel extends BaseViewModel {
 
     public void setComments(String comments) {
         this.comments = comments;
+        onDataChanged();
     }
 
     public boolean isFavorite() {
@@ -114,6 +126,7 @@ public class RamenDetailViewModel extends BaseViewModel {
 
     public void setFavorite(boolean favorite) {
         this.favorite = favorite;
+        onDataChanged();
     }
 
     public void save() {
@@ -149,6 +162,27 @@ public class RamenDetailViewModel extends BaseViewModel {
 
     public LiveData<Resource<Ramen>> getDeleteRamenLiveData() {
         return deleteRamenLiveData;
+    }
+
+    private void onDataChanged() {
+        if (ramen == null) {
+            boolean contentsUpdated = !TextUtils.isEmpty(ramenName) || !TextUtils.isEmpty(shop) ||
+                    !TextUtils.isEmpty(location) || !TextUtils.isEmpty(comments);
+            contentsUpdatedLiveData.setValue(contentsUpdated);
+        } else {
+            boolean contentsUpdated = !Objects.equals(ramen.getName(), ramenName) ||
+                    !Objects.equals(ramen.getShop(), shop) ||
+                    !Objects.equals(ramen.getLocation(), location) ||
+                    !Objects.equals(DateUtils.formatDate(ramen.getDate(), DateUtils.DATE_FORMAT_DEFAULT, DateUtils.DATE_FORMAT_DATE_ONLY),
+                            DateUtils.formatDate(date, DateUtils.DATE_FORMAT_DEFAULT, DateUtils.DATE_FORMAT_DATE_ONLY)) ||
+                    !Objects.equals(ramen.getComments(), comments) ||
+                    !Objects.equals(ramen.isFavorite(), favorite);
+            contentsUpdatedLiveData.setValue(contentsUpdated);
+        }
+    }
+
+    public MutableLiveData<Boolean> getContentsUpdatedLiveData() {
+        return contentsUpdatedLiveData;
     }
 
     public static class Factory implements ViewModelProvider.Factory {

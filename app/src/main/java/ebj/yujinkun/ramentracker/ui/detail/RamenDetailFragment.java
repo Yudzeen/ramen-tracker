@@ -62,6 +62,9 @@ public class RamenDetailFragment extends Fragment {
             resource.doOnSuccess(this::handleDeleteSuccess);
             resource.doOnError(this::handleDeleteError);
         });
+
+        viewModel.getContentsUpdatedLiveData().observe(getViewLifecycleOwner(), contentsUpdated ->
+                binding.fab.setVisibility(contentsUpdated ? View.VISIBLE : View.GONE));
     }
 
     @Override
