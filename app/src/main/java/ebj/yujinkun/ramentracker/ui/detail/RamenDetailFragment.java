@@ -208,6 +208,11 @@ public class RamenDetailFragment extends Fragment {
         binding.date.getEditText().setText(DateUtils.formatDate(viewModel.getDate(),
                 DateUtils.DATE_FORMAT_DEFAULT, DateUtils.DATE_FORMAT_DATE_PRETTY));
         binding.date.getEditText().setInputType(InputType.TYPE_NULL);
+        binding.date.getEditText().setOnFocusChangeListener((v, hasFocus) -> {
+            if (hasFocus) {
+                handleDateClicked();
+            }
+        });
         binding.date.getEditText().setOnClickListener(v -> handleDateClicked());
     }
 
