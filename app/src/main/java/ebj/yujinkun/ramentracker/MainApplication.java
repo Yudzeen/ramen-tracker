@@ -2,6 +2,8 @@ package ebj.yujinkun.ramentracker;
 
 import android.app.Application;
 
+import androidx.appcompat.app.AppCompatDelegate;
+
 import ebj.yujinkun.ramentracker.data.room.AppDatabase;
 import timber.log.Timber;
 
@@ -14,6 +16,7 @@ public class MainApplication extends Application {
         super.onCreate();
         initializeLogger();
         initializeAppDatabase();
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
     }
 
     public AppDatabase getAppDatabase() {
