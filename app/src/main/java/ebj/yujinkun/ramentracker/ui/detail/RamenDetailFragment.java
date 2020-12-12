@@ -1,10 +1,16 @@
 package ebj.yujinkun.ramentracker.ui.detail;
 
+import android.Manifest;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.InputType;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -19,6 +25,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
@@ -28,13 +35,17 @@ import java.util.Objects;
 
 import ebj.yujinkun.ramentracker.R;
 import ebj.yujinkun.ramentracker.data.RamenRepository;
+import ebj.yujinkun.ramentracker.data.models.Ramen;
 import ebj.yujinkun.ramentracker.databinding.FragmentRamenDetailBinding;
 import ebj.yujinkun.ramentracker.di.Injection;
-import ebj.yujinkun.ramentracker.models.Ramen;
 import ebj.yujinkun.ramentracker.util.DateUtils;
 import timber.log.Timber;
 
 public class RamenDetailFragment extends Fragment {
+
+    private static final int STORAGE_PERMISSION_REQUEST_CODE = 1;
+
+    private static final int SELECT_IMAGE_REQUEST_CODE = 100;
 
     private FragmentRamenDetailBinding binding;
     private RamenDetailViewModel viewModel;
@@ -64,6 +75,8 @@ public class RamenDetailFragment extends Fragment {
                 .get(RamenDetailViewModel.class);
         parseArguments(getArguments());
         initViews();
+
+        viewModel.getPhotoUriLiveData().observe(getViewLifecycleOwner(), this::updateRamenPhoto);
 
         viewModel.getSaveRamenLiveData().observe(getViewLifecycleOwner(), resource -> {
             resource.doOnLoading(this::handleSaveLoading);
@@ -96,7 +109,7 @@ public class RamenDetailFragment extends Fragment {
     public void onPrepareOptionsMenu(@NonNull Menu menu) {
         menu.findItem(R.id.action_favorite).setIcon(viewModel.isFavorite() ?
                 R.drawable.ic_favorite : R.drawable.ic_favorite_border);
-        menu.findItem(R.id.action_delete).setVisible(viewModel.getRamen() != null);
+        menu.findItem(R.id.action_delete).setVisible(viewModel.getInitialRamen() != null);
     }
 
     @Override
@@ -121,6 +134,34 @@ public class RamenDetailFragment extends Fragment {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if (requestCode == SELECT_IMAGE_REQUEST_CODE) {
+            if (resultCode == Activity.RESULT_OK) {
+                if (data != null) {
+                    Uri uri = data.getData();
+                    Timber.i("Received uri: %s", uri);
+                    handleRamenPhotoSelected(uri);
+                } else {
+                    Timber.e("data is null");
+                }
+            }
+        }
+
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case STORAGE_PERMISSION_REQUEST_CODE:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    handleSelectImage();
+                } else {
+                    Toast.makeText(requireContext(), "Please allow storage permission to proceed", Toast.LENGTH_SHORT).show();
+                }
+        }
+    }
+
     private void parseArguments(Bundle args) {
         Ramen ramen = RamenDetailFragmentArgs.fromBundle(args).getRamen();
         viewModel.initValues(ramen);
@@ -141,7 +182,8 @@ public class RamenDetailFragment extends Fragment {
         initRamenNameEditText();
         initCommentsEditText();
         initDateField();
-        binding.fab.setOnClickListener(view -> viewModel.save());
+        binding.ramenImagePlaceholder.setOnClickListener(view -> showAddPhotoDialog());
+        binding.fab.setOnClickListener(view -> viewModel.saveRamen());
     }
 
     private void initShopEditText() {
@@ -257,7 +299,7 @@ public class RamenDetailFragment extends Fragment {
     }
 
     private void handleDeleteAction() {
-        viewModel.delete();
+        viewModel.deleteRamen();
     }
 
     private void handleDeleteLoading() {
@@ -305,6 +347,62 @@ public class RamenDetailFragment extends Fragment {
                 .setNegativeButton("No", (dialog, which) -> dialog.dismiss())
                 .create();
         alertDialog.show();
+    }
+
+    private void showAddPhotoDialog() {
+        AlertDialog alertDialog = new AlertDialog.Builder(requireActivity())
+                .setTitle(R.string.add_image)
+                .setItems(R.array.add_photo, (dialog, which) -> {
+                    switch (which) {
+                        case 0:
+                            handleTakePhoto();
+                            break;
+                        case 1:
+                            handleSelectImage();
+                            break;
+                        default:
+                            Timber.e("Unknown item selected");
+                    }
+                })
+                .setNegativeButton(R.string.cancel, (dialog, which) -> dialog.dismiss())
+                .create();
+        alertDialog.show();
+    }
+
+    private void handleTakePhoto() {
+
+    }
+
+    private void handleSelectImage() {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE) ==
+                PackageManager.PERMISSION_GRANTED) {
+            Intent intent = new Intent();
+            intent.setType("image/*");
+            intent.setAction(Intent.ACTION_GET_CONTENT);
+            startActivityForResult(Intent.createChooser(intent, "Select Image"), SELECT_IMAGE_REQUEST_CODE);
+        }  else {
+            requestPermissions(new String[] {Manifest.permission.READ_EXTERNAL_STORAGE}, STORAGE_PERMISSION_REQUEST_CODE);
+        }
+    }
+
+    private void handleRamenPhotoSelected(Uri uri) {
+        if (uri == null) {
+            Timber.e("Uri is null");
+            return;
+        }
+        viewModel.setPhotoUri(uri);
+    }
+
+    private void updateRamenPhoto(String uri) {
+        if (TextUtils.isEmpty(uri)) {
+            Timber.w("Uri is empty");
+            return;
+        }
+        Timber.i("Showing ramen image: %s", uri);
+        binding.ramenImagePlaceholder.setVisibility(View.GONE);
+        binding.addPhotoIcon.setVisibility(View.GONE);
+        binding.ramenImage.setImageURI(Uri.parse(uri));
+        binding.ramenImage.setVisibility(View.VISIBLE);
     }
 
     private void navigateUp() {

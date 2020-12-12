@@ -8,7 +8,7 @@ import androidx.lifecycle.ViewModelProvider;
 import java.util.List;
 
 import ebj.yujinkun.ramentracker.data.RamenRepository;
-import ebj.yujinkun.ramentracker.models.Ramen;
+import ebj.yujinkun.ramentracker.data.models.Ramen;
 import ebj.yujinkun.ramentracker.ui.common.BaseViewModel;
 import ebj.yujinkun.ramentracker.util.Resource;
 import io.reactivex.android.schedulers.AndroidSchedulers;

@@ -8,7 +8,7 @@ import androidx.room.Query;
 
 import java.util.List;
 
-import ebj.yujinkun.ramentracker.models.Ramen;
+import ebj.yujinkun.ramentracker.data.models.Ramen;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 

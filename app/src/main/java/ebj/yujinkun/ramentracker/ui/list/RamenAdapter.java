@@ -13,7 +13,7 @@ import java.util.List;
 
 import ebj.yujinkun.ramentracker.R;
 import ebj.yujinkun.ramentracker.databinding.ListItemRamenBinding;
-import ebj.yujinkun.ramentracker.models.Ramen;
+import ebj.yujinkun.ramentracker.data.models.Ramen;
 import ebj.yujinkun.ramentracker.util.DateUtils;
 import timber.log.Timber;
 

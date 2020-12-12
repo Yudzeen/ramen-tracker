@@ -28,17 +28,49 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <ImageView
-                android:id="@+id/ramenImage"
+            <FrameLayout
+                android:id="@+id/ramenImageLayout"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
-                android:contentDescription="@string/image"
-                android:scaleType="fitCenter"
-                android:src="@drawable/ic_ramen"
                 app:layout_constraintDimensionRatio="H,16:9"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent">
+
+                <ImageView
+                    android:id="@+id/ramenImage"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:contentDescription="@string/ramen_image"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_ramen"
+                    android:background="@android:color/darker_gray"
+                    app:layout_constraintDimensionRatio="H,16:9"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <ImageView
+                    android:id="@+id/ramenImagePlaceholder"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="32dp"
+                    android:contentDescription="@string/image"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_ramen"
+                    android:background="@android:color/darker_gray"
+                    app:tint="@android:color/white" />
+
+                <ImageView
+                    android:id="@+id/addPhotoIcon"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_gravity="bottom|end"
+                    android:layout_margin="8dp"
+                    android:contentDescription="@string/add_photo"
+                    android:src="@drawable/ic_add_a_photo" />
+
+            </FrameLayout>
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/ramenName"
@@ -50,7 +82,7 @@
                 android:layout_marginEnd="16dp"
                 android:hint="@string/ramen_name_hint"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/ramenImage"
+                app:layout_constraintTop_toBottomOf="@id/ramenImageLayout"
                 app:startIconDrawable="@drawable/ic_label">
 
                 <com.google.android.material.textfield.TextInputEditText

@@ -23,7 +23,7 @@
         <argument
             android:name="ramen"
             android:defaultValue="@null"
-            app:argType="ebj.yujinkun.ramentracker.models.Ramen"
+            app:argType="ebj.yujinkun.ramentracker.data.models.Ramen"
             app:nullable="true" />
     </fragment>
 </navigation>
