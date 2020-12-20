@@ -6,6 +6,7 @@ import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
@@ -71,12 +72,12 @@ public class RamenDetailFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         RamenRepository ramenRepository = Injection.provideRamenRepository(requireActivity().getApplication());
-        viewModel = new ViewModelProvider(this, new RamenDetailViewModel.Factory(ramenRepository))
+        viewModel = new ViewModelProvider(this, new RamenDetailViewModel.Factory(requireActivity().getApplication(), ramenRepository))
                 .get(RamenDetailViewModel.class);
         parseArguments(getArguments());
         initViews();
 
-        viewModel.getPhotoUriLiveData().observe(getViewLifecycleOwner(), this::updateRamenPhoto);
+        viewModel.getPhotoLocationLiveData().observe(getViewLifecycleOwner(), this::updateRamenPhoto);
 
         viewModel.getSaveRamenLiveData().observe(getViewLifecycleOwner(), resource -> {
             resource.doOnLoading(this::handleSaveLoading);
@@ -390,18 +391,22 @@ public class RamenDetailFragment extends Fragment {
             Timber.e("Uri is null");
             return;
         }
-        viewModel.setPhotoUri(uri);
-    }
-
-    private void updateRamenPhoto(String uri) {
-        if (TextUtils.isEmpty(uri)) {
-            Timber.w("Uri is empty");
-            return;
-        }
-        Timber.i("Showing ramen image: %s", uri);
+        viewModel.setImageUri(uri);
         binding.ramenImagePlaceholder.setVisibility(View.GONE);
         binding.addPhotoIcon.setVisibility(View.GONE);
-        binding.ramenImage.setImageURI(Uri.parse(uri));
+        binding.ramenImage.setImageURI(uri);
+        binding.ramenImage.setVisibility(View.VISIBLE);
+    }
+
+    private void updateRamenPhoto(String path) {
+        if (TextUtils.isEmpty(path)) {
+            Timber.w("path is empty");
+            return;
+        }
+        Timber.i("Showing ramen image: %s", path);
+        binding.ramenImagePlaceholder.setVisibility(View.GONE);
+        binding.addPhotoIcon.setVisibility(View.GONE);
+        binding.ramenImage.setImageBitmap(BitmapFactory.decodeFile(path));
         binding.ramenImage.setVisibility(View.VISIBLE);
     }
 

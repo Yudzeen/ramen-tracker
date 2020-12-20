@@ -1,5 +1,6 @@
 package ebj.yujinkun.ramentracker.ui.detail;
 
+import android.app.Application;
 import android.net.Uri;
 import android.text.TextUtils;
 
@@ -17,14 +18,19 @@ import ebj.yujinkun.ramentracker.data.models.Photo;
 import ebj.yujinkun.ramentracker.data.models.Ramen;
 import ebj.yujinkun.ramentracker.ui.common.BaseViewModel;
 import ebj.yujinkun.ramentracker.util.DateUtils;
+import ebj.yujinkun.ramentracker.util.FileUtils;
 import ebj.yujinkun.ramentracker.util.Resource;
-import io.reactivex.Completable;
+import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
+import timber.log.Timber;
 
 public class RamenDetailViewModel extends BaseViewModel {
 
+    private final Application application;
     private final RamenRepository ramenRepository;
+
     private Ramen initialRamen;
     private String id;
     private String ramenName;
@@ -34,15 +40,17 @@ public class RamenDetailViewModel extends BaseViewModel {
     private String comments;
     private boolean favorite;
 
-    private String initialPhotoUri;
-    private final MutableLiveData<String> photoUriLiveData = new MutableLiveData<>();
+    private String initialPhotoLocation;
+    private final MutableLiveData<String> photoLocationLiveData = new MutableLiveData<>();
+    private Uri imageUri;
 
     private final MutableLiveData<Resource<Ramen>> saveRamenLiveData = new MutableLiveData<>();
     private final MutableLiveData<Resource<Ramen>> deleteRamenLiveData = new MutableLiveData<>();
 
     private final MutableLiveData<Boolean> contentsUpdatedLiveData = new MutableLiveData<>();
 
-    public RamenDetailViewModel(RamenRepository ramenRepository) {
+    public RamenDetailViewModel(Application application, RamenRepository ramenRepository) {
+        this.application = application;
         this.ramenRepository = ramenRepository;
     }
 
@@ -65,7 +73,7 @@ public class RamenDetailViewModel extends BaseViewModel {
             date = DateUtils.getCurrentDate();
             comments = "";
             favorite = false;
-            initialPhotoUri = "";
+            initialPhotoLocation = "";
         }
         contentsUpdatedLiveData.setValue(false);
     }
@@ -74,8 +82,13 @@ public class RamenDetailViewModel extends BaseViewModel {
         bind(ramenRepository.getPhotosForRamen(ramen.getId())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .map(photos -> photos.get(0).getUri())
-                .subscribe(photoUriLiveData::setValue));
+                .subscribe(photos -> {
+                   if (photos.size() > 0) {
+                       photoLocationLiveData.setValue(photos.get(0).getLocation());
+                   } else {
+                       Timber.i("No photos for ramen: %s", ramen);
+                   }
+                }));
     }
 
     public Ramen getInitialRamen() {
@@ -145,13 +158,8 @@ public class RamenDetailViewModel extends BaseViewModel {
         onDataChanged();
     }
 
-    public LiveData<String> getPhotoUriLiveData() {
-        return photoUriLiveData;
-    }
-
-    public void setPhotoUri(Uri uri) {
-        photoUriLiveData.setValue(uri.toString());
-        onDataChanged();
+    public LiveData<String> getPhotoLocationLiveData() {
+        return photoLocationLiveData;
     }
 
     public void saveRamen() {
@@ -165,25 +173,31 @@ public class RamenDetailViewModel extends BaseViewModel {
                 .setFavorite(favorite)
                 .build();
 
-        Completable saveOperation;
-        Photo photo = photoUriLiveData.getValue() != null ?
-                Photo.create(photoUriLiveData.getValue()) : null;
-        if (photo != null) {
-            saveOperation = ramenRepository.save(ramen)
-                    .andThen(ramenRepository.save(photo))
-                    .andThen(ramenRepository.addPhotoToRamen(photo, ramen));
+        if (imageUri != null) {
+            bind(ramenRepository.save(ramen)
+                    .andThen(copyPhotoToInternalStorage(imageUri)
+                            .flatMap((Function<Photo, Single<Photo>>) photo -> ramenRepository.save(photo).toSingleDefault(photo))
+                            .flatMap(photo -> ramenRepository.addPhotoToRamen(photo, ramen).toSingleDefault(photo)))
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .doOnSubscribe(disposable -> saveRamenLiveData.setValue(Resource.loading()))
+                    .subscribe(photo -> {
+                                updateInitialValues(ramen, photo);
+                                saveRamenLiveData.setValue(Resource.success(ramen));
+                            },
+                            throwable -> saveRamenLiveData.setValue(Resource.error(throwable))));
         } else {
-            saveOperation = ramenRepository.save(ramen);
+            bind(ramenRepository.save(ramen)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .doOnSubscribe(disposable -> saveRamenLiveData.setValue(Resource.loading()))
+                    .subscribe(() -> {
+                                updateInitialValues(ramen, null);
+                                saveRamenLiveData.setValue(Resource.success(ramen));
+                            },
+                            throwable -> saveRamenLiveData.setValue(Resource.error(throwable))));
+
         }
-        bind(saveOperation
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .doOnSubscribe(disposable -> saveRamenLiveData.setValue(Resource.loading()))
-                .subscribe(() -> {
-                        updateInitialValues(ramen, photo);
-                        saveRamenLiveData.setValue(Resource.success(ramen));
-                    },
-                        throwable -> saveRamenLiveData.setValue(Resource.error(throwable))));
     }
 
     private void updateInitialValues(Ramen ramen, Photo photo) {
@@ -199,7 +213,8 @@ public class RamenDetailViewModel extends BaseViewModel {
         }
 
         if (photo != null) {
-            initialPhotoUri = photo.getUri();
+            initialPhotoLocation = photo.getLocation();
+            photoLocationLiveData.setValue(initialPhotoLocation);
         }
         contentsUpdatedLiveData.setValue(false);
     }
@@ -226,7 +241,7 @@ public class RamenDetailViewModel extends BaseViewModel {
         if (initialRamen == null) {
             contentsUpdated = !TextUtils.isEmpty(ramenName) || !TextUtils.isEmpty(shop) ||
                     !TextUtils.isEmpty(location) || !TextUtils.isEmpty(comments) ||
-                    !TextUtils.isEmpty(photoUriLiveData.getValue());
+                    imageUri != null;
         } else {
             contentsUpdated = !Objects.equals(initialRamen.getName(), ramenName) ||
                     !Objects.equals(initialRamen.getShop(), shop) ||
@@ -235,7 +250,7 @@ public class RamenDetailViewModel extends BaseViewModel {
                             DateUtils.formatDate(date, DateUtils.DATE_FORMAT_DEFAULT, DateUtils.DATE_FORMAT_DATE_ONLY)) ||
                     !Objects.equals(initialRamen.getComments(), comments) ||
                     !Objects.equals(initialRamen.isFavorite(), favorite) ||
-                    !Objects.equals(initialPhotoUri, photoUriLiveData.getValue());
+                    !Objects.equals(initialPhotoLocation, photoLocationLiveData.getValue());
         }
         contentsUpdatedLiveData.setValue(contentsUpdated);
     }
@@ -244,11 +259,27 @@ public class RamenDetailViewModel extends BaseViewModel {
         return contentsUpdatedLiveData;
     }
 
+    private Single<Photo> copyPhotoToInternalStorage(Uri uri) {
+        return Single.fromCallable(() -> {
+            Timber.i("Copy photo: %s", uri);
+            String id = UUID.randomUUID().toString();
+            String outputFileName = id + ".png";
+            String location = FileUtils.copyFileToInternalStorage(application, uri, outputFileName);
+            return new Photo(id, location);
+        });
+    }
+
+    public void setImageUri(Uri imageUri) {
+        this.imageUri = imageUri;
+    }
+
     public static class Factory implements ViewModelProvider.Factory {
 
+        private final Application application;
         private final RamenRepository ramenRepository;
 
-        public Factory(RamenRepository ramenRepository) {
+        public Factory(Application application, RamenRepository ramenRepository) {
+            this.application = application;
             this.ramenRepository = ramenRepository;
         }
 
@@ -256,7 +287,7 @@ public class RamenDetailViewModel extends BaseViewModel {
         @Override
         public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
             //noinspection unchecked
-            return (T) new RamenDetailViewModel(ramenRepository);
+            return (T) new RamenDetailViewModel(application, ramenRepository);
         }
     }
 

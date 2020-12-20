@@ -5,7 +5,6 @@ import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
 import java.util.Objects;
-import java.util.UUID;
 
 @Entity(tableName = "photos")
 public class Photo {
@@ -13,15 +12,11 @@ public class Photo {
     @NonNull
     @PrimaryKey
     private final String id;
-    private final String uri;
+    private final String location;
 
-    public static Photo create(String uri) {
-        return new Photo(UUID.randomUUID().toString(), uri);
-    }
-
-    public Photo(@NonNull String id, String uri) {
+    public Photo(@NonNull String id, String location) {
         this.id = id;
-        this.uri = uri;
+        this.location = location;
     }
 
     @NonNull
@@ -29,8 +24,8 @@ public class Photo {
         return id;
     }
 
-    public String getUri() {
-        return uri;
+    public String getLocation() {
+        return location;
     }
 
     @Override
@@ -39,12 +34,12 @@ public class Photo {
         if (o == null || getClass() != o.getClass()) return false;
         Photo photo = (Photo) o;
         return id.equals(photo.id) &&
-                Objects.equals(uri, photo.uri);
+                Objects.equals(location, photo.location);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, uri);
+        return Objects.hash(id, location);
     }
 
     @NonNull
@@ -52,7 +47,7 @@ public class Photo {
     public String toString() {
         return "Photo{" +
                 "id='" + id + '\'' +
-                ", link='" + uri + '\'' +
+                ", location='" + location + '\'' +
                 '}';
     }
 
