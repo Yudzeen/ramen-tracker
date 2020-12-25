@@ -1,6 +1,5 @@
 package ebj.yujinkun.ramentracker.ui.detail;
 
-import android.app.Application;
 import android.net.Uri;
 import android.text.TextUtils;
 
@@ -18,7 +17,6 @@ import ebj.yujinkun.ramentracker.data.models.Photo;
 import ebj.yujinkun.ramentracker.data.models.Ramen;
 import ebj.yujinkun.ramentracker.ui.common.BaseViewModel;
 import ebj.yujinkun.ramentracker.util.DateUtils;
-import ebj.yujinkun.ramentracker.util.FileUtils;
 import ebj.yujinkun.ramentracker.util.Resource;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -28,7 +26,6 @@ import timber.log.Timber;
 
 public class RamenDetailViewModel extends BaseViewModel {
 
-    private final Application application;
     private final RamenRepository ramenRepository;
 
     private Ramen initialRamen;
@@ -49,8 +46,7 @@ public class RamenDetailViewModel extends BaseViewModel {
 
     private final MutableLiveData<Boolean> contentsUpdatedLiveData = new MutableLiveData<>();
 
-    public RamenDetailViewModel(Application application, RamenRepository ramenRepository) {
-        this.application = application;
+    public RamenDetailViewModel(RamenRepository ramenRepository) {
         this.ramenRepository = ramenRepository;
     }
 
@@ -175,7 +171,7 @@ public class RamenDetailViewModel extends BaseViewModel {
 
         if (imageUri != null) {
             bind(ramenRepository.save(ramen)
-                    .andThen(copyPhotoToInternalStorage(imageUri)
+                    .andThen(ramenRepository.copyPhotoToInternalStorage(imageUri)
                             .flatMap((Function<Photo, Single<Photo>>) photo -> ramenRepository.save(photo).toSingleDefault(photo))
                             .flatMap(photo -> ramenRepository.addPhotoToRamen(photo, ramen).toSingleDefault(photo)))
                     .subscribeOn(Schedulers.io())
@@ -259,27 +255,15 @@ public class RamenDetailViewModel extends BaseViewModel {
         return contentsUpdatedLiveData;
     }
 
-    private Single<Photo> copyPhotoToInternalStorage(Uri uri) {
-        return Single.fromCallable(() -> {
-            Timber.i("Copy photo: %s", uri);
-            String id = UUID.randomUUID().toString();
-            String outputFileName = id + ".png";
-            String location = FileUtils.copyFileToInternalStorage(application, uri, outputFileName);
-            return new Photo(id, location);
-        });
-    }
-
     public void setImageUri(Uri imageUri) {
         this.imageUri = imageUri;
     }
 
     public static class Factory implements ViewModelProvider.Factory {
 
-        private final Application application;
         private final RamenRepository ramenRepository;
 
-        public Factory(Application application, RamenRepository ramenRepository) {
-            this.application = application;
+        public Factory(RamenRepository ramenRepository) {
             this.ramenRepository = ramenRepository;
         }
 
@@ -287,7 +271,7 @@ public class RamenDetailViewModel extends BaseViewModel {
         @Override
         public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
             //noinspection unchecked
-            return (T) new RamenDetailViewModel(application, ramenRepository);
+            return (T) new RamenDetailViewModel(ramenRepository);
         }
     }
 

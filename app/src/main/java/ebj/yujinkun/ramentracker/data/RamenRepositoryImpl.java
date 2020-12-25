@@ -1,7 +1,10 @@
 package ebj.yujinkun.ramentracker.data;
 
+import android.net.Uri;
+
 import java.util.List;
 
+import ebj.yujinkun.ramentracker.data.files.FileStorage;
 import ebj.yujinkun.ramentracker.data.models.Photo;
 import ebj.yujinkun.ramentracker.data.models.RamenPhotoJoin;
 import ebj.yujinkun.ramentracker.data.room.AppDatabase;
@@ -11,6 +14,7 @@ import ebj.yujinkun.ramentracker.data.models.Ramen;
 import ebj.yujinkun.ramentracker.data.room.RamenPhotoJoinDao;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
+import io.reactivex.Single;
 
 public class RamenRepositoryImpl implements RamenRepository {
 
@@ -18,10 +22,13 @@ public class RamenRepositoryImpl implements RamenRepository {
     private final PhotoDao photoDao;
     private final RamenPhotoJoinDao ramenPhotoJoinDao;
 
-    public RamenRepositoryImpl(AppDatabase appDatabase) {
+    private final FileStorage fileStorage;
+
+    public RamenRepositoryImpl(AppDatabase appDatabase, FileStorage fileStorage) {
         this.ramenDao = appDatabase.ramenDao();
         this.photoDao = appDatabase.photoDao();
         this.ramenPhotoJoinDao = appDatabase.ramenPhotoJoinDao();
+        this.fileStorage = fileStorage;
     }
 
     @Override
@@ -62,5 +69,10 @@ public class RamenRepositoryImpl implements RamenRepository {
     @Override
     public Completable removePhotoFromRamen(Photo photo, Ramen ramen) {
         return ramenPhotoJoinDao.delete(RamenPhotoJoin.from(ramen, photo));
+    }
+
+    @Override
+    public Single<Photo> copyPhotoToInternalStorage(Uri contentUri) {
+        return fileStorage.saveImage(contentUri);
     }
 }

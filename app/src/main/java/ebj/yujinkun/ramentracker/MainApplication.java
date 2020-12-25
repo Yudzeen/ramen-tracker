@@ -4,23 +4,26 @@ import android.app.Application;
 
 import androidx.appcompat.app.AppCompatDelegate;
 
+import ebj.yujinkun.ramentracker.data.files.FileStorage;
+import ebj.yujinkun.ramentracker.data.files.FileStorageImpl;
 import ebj.yujinkun.ramentracker.data.room.AppDatabase;
+import ebj.yujinkun.ramentracker.di.AppComponent;
 import timber.log.Timber;
 
 public class MainApplication extends Application {
 
-    private AppDatabase appDatabase;
+    private AppComponent appComponent;
 
     @Override
     public void onCreate() {
         super.onCreate();
         initializeLogger();
-        initializeAppDatabase();
+        appComponent = AppComponent.initializeAppComponent(this);
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
     }
 
-    public AppDatabase getAppDatabase() {
-        return appDatabase;
+    public AppComponent getAppComponent() {
+        return appComponent;
     }
 
     private void initializeLogger() {
@@ -29,7 +32,4 @@ public class MainApplication extends Application {
         }
     }
 
-    private void initializeAppDatabase() {
-        appDatabase = AppDatabase.createDatabase(this);
-    }
 }

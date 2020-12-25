@@ -19,9 +19,9 @@ import java.util.List;
 
 import ebj.yujinkun.ramentracker.R;
 import ebj.yujinkun.ramentracker.data.RamenRepository;
+import ebj.yujinkun.ramentracker.data.models.Ramen;
 import ebj.yujinkun.ramentracker.databinding.FragmentRamenListBinding;
 import ebj.yujinkun.ramentracker.di.Injection;
-import ebj.yujinkun.ramentracker.data.models.Ramen;
 import ebj.yujinkun.ramentracker.ui.common.ItemSwipeCallback;
 import timber.log.Timber;
 
@@ -42,7 +42,7 @@ public class RamenListFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         binding.fab.setOnClickListener(v -> navigateToRamenDetailScreen(null));
 
-        RamenRepository ramenRepository = Injection.provideRamenRepository(requireActivity().getApplication());
+        RamenRepository ramenRepository = Injection.getRamenRepository(requireActivity().getApplication());
         viewModel = new ViewModelProvider(this, new RamenListViewModel.Factory(ramenRepository))
                 .get(RamenListViewModel.class);
 

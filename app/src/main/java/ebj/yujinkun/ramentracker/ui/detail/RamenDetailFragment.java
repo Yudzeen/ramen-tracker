@@ -71,8 +71,8 @@ public class RamenDetailFragment extends Fragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        RamenRepository ramenRepository = Injection.provideRamenRepository(requireActivity().getApplication());
-        viewModel = new ViewModelProvider(this, new RamenDetailViewModel.Factory(requireActivity().getApplication(), ramenRepository))
+        RamenRepository ramenRepository = Injection.getRamenRepository(requireActivity().getApplication());
+        viewModel = new ViewModelProvider(this, new RamenDetailViewModel.Factory(ramenRepository))
                 .get(RamenDetailViewModel.class);
         parseArguments(getArguments());
         initViews();

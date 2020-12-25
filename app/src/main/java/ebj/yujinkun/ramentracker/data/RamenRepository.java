@@ -1,11 +1,14 @@
 package ebj.yujinkun.ramentracker.data;
 
+import android.net.Uri;
+
 import java.util.List;
 
 import ebj.yujinkun.ramentracker.data.models.Photo;
 import ebj.yujinkun.ramentracker.data.models.Ramen;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
+import io.reactivex.Single;
 
 public interface RamenRepository {
 
@@ -19,4 +22,6 @@ public interface RamenRepository {
     Flowable<List<Photo>> getPhotosForRamen(String ramenId);
     Completable addPhotoToRamen(Photo photo, Ramen ramen);
     Completable removePhotoFromRamen(Photo photo, Ramen ramen);
+
+    Single<Photo> copyPhotoToInternalStorage(Uri contentUri);
 }
