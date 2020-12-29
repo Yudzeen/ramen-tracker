@@ -9,9 +9,10 @@ public interface FileStorage {
 
     /**
      * Save image from a content uri in app's internal storage
+     * @param filename name of image when saved to internal storage
      * @param contentUri content uri of photo usually from image picker or photo captured
-     * @return photo with related data
+     * @return string path in internal storage
      */
-    Single<Photo> saveImage(Uri contentUri);
+    Single<String> saveImage(String filename, Uri contentUri);
 
 }

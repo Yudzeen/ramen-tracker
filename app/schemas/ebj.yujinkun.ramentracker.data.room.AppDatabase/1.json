@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "b8d00e37d82ed0dd707e5fc1b0be385a",
+    "identityHash": "704a122cc58366b46b5202d56894fb8c",
     "entities": [
       {
         "tableName": "ramen",
@@ -71,13 +71,19 @@
       },
       {
         "tableName": "photos",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `location` TEXT, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`photo_id` TEXT NOT NULL, `ramen_id` TEXT, `location` TEXT, PRIMARY KEY(`photo_id`))",
         "fields": [
           {
-            "fieldPath": "id",
-            "columnName": "id",
+            "fieldPath": "photoId",
+            "columnName": "photo_id",
             "affinity": "TEXT",
             "notNull": true
+          },
+          {
+            "fieldPath": "ramenId",
+            "columnName": "ramen_id",
+            "affinity": "TEXT",
+            "notNull": false
           },
           {
             "fieldPath": "location",
@@ -88,85 +94,18 @@
         ],
         "primaryKey": {
           "columnNames": [
-            "id"
+            "photo_id"
           ],
           "autoGenerate": false
         },
         "indices": [],
         "foreignKeys": []
-      },
-      {
-        "tableName": "ramen_photo_join",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`ramen_id` TEXT NOT NULL, `photo_id` TEXT NOT NULL, PRIMARY KEY(`ramen_id`, `photo_id`), FOREIGN KEY(`ramen_id`) REFERENCES `ramen`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION , FOREIGN KEY(`photo_id`) REFERENCES `photos`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
-        "fields": [
-          {
-            "fieldPath": "ramenId",
-            "columnName": "ramen_id",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "photoId",
-            "columnName": "photo_id",
-            "affinity": "TEXT",
-            "notNull": true
-          }
-        ],
-        "primaryKey": {
-          "columnNames": [
-            "ramen_id",
-            "photo_id"
-          ],
-          "autoGenerate": false
-        },
-        "indices": [
-          {
-            "name": "index_ramen_photo_join_ramen_id",
-            "unique": false,
-            "columnNames": [
-              "ramen_id"
-            ],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_ramen_photo_join_ramen_id` ON `${TABLE_NAME}` (`ramen_id`)"
-          },
-          {
-            "name": "index_ramen_photo_join_photo_id",
-            "unique": false,
-            "columnNames": [
-              "photo_id"
-            ],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_ramen_photo_join_photo_id` ON `${TABLE_NAME}` (`photo_id`)"
-          }
-        ],
-        "foreignKeys": [
-          {
-            "table": "ramen",
-            "onDelete": "NO ACTION",
-            "onUpdate": "NO ACTION",
-            "columns": [
-              "ramen_id"
-            ],
-            "referencedColumns": [
-              "id"
-            ]
-          },
-          {
-            "table": "photos",
-            "onDelete": "NO ACTION",
-            "onUpdate": "NO ACTION",
-            "columns": [
-              "photo_id"
-            ],
-            "referencedColumns": [
-              "id"
-            ]
-          }
-        ]
       }
     ],
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b8d00e37d82ed0dd707e5fc1b0be385a')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '704a122cc58366b46b5202d56894fb8c')"
     ]
   }
 }

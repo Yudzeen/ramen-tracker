@@ -18,9 +18,7 @@ import ebj.yujinkun.ramentracker.data.models.Ramen;
 import ebj.yujinkun.ramentracker.ui.common.BaseViewModel;
 import ebj.yujinkun.ramentracker.util.DateUtils;
 import ebj.yujinkun.ramentracker.util.Resource;
-import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 import timber.log.Timber;
 
@@ -170,18 +168,18 @@ public class RamenDetailViewModel extends BaseViewModel {
                 .build();
 
         if (imageUri != null) {
+            String id = UUID.randomUUID().toString();
+            String filename = id + ".png";
             bind(ramenRepository.save(ramen)
-                    .andThen(ramenRepository.copyPhotoToInternalStorage(imageUri)
-                            .flatMap((Function<Photo, Single<Photo>>) photo -> ramenRepository.save(photo).toSingleDefault(photo))
-                            .flatMap(photo -> ramenRepository.addPhotoToRamen(photo, ramen).toSingleDefault(photo)))
+                    .andThen(ramenRepository.copyPhotoToInternalStorage(filename, imageUri))
+                    .map(location -> new Photo(id, ramen.getId(), location))
+                    .flatMap(photo -> ramenRepository.save(photo).toSingleDefault(photo))
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
-                    .doOnSubscribe(disposable -> saveRamenLiveData.setValue(Resource.loading()))
                     .subscribe(photo -> {
-                                updateInitialValues(ramen, photo);
-                                saveRamenLiveData.setValue(Resource.success(ramen));
-                            },
-                            throwable -> saveRamenLiveData.setValue(Resource.error(throwable))));
+                        updateInitialValues(ramen, photo);
+                        saveRamenLiveData.setValue(Resource.success(ramen));
+                    }, throwable -> saveRamenLiveData.setValue(Resource.error(throwable))));
         } else {
             bind(ramenRepository.save(ramen)
                     .subscribeOn(Schedulers.io())

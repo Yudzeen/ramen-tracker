@@ -6,12 +6,10 @@ import java.util.List;
 
 import ebj.yujinkun.ramentracker.data.files.FileStorage;
 import ebj.yujinkun.ramentracker.data.models.Photo;
-import ebj.yujinkun.ramentracker.data.models.RamenPhotoJoin;
 import ebj.yujinkun.ramentracker.data.room.AppDatabase;
 import ebj.yujinkun.ramentracker.data.room.PhotoDao;
 import ebj.yujinkun.ramentracker.data.room.RamenDao;
 import ebj.yujinkun.ramentracker.data.models.Ramen;
-import ebj.yujinkun.ramentracker.data.room.RamenPhotoJoinDao;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Single;
@@ -20,14 +18,12 @@ public class RamenRepositoryImpl implements RamenRepository {
 
     private final RamenDao ramenDao;
     private final PhotoDao photoDao;
-    private final RamenPhotoJoinDao ramenPhotoJoinDao;
 
     private final FileStorage fileStorage;
 
     public RamenRepositoryImpl(AppDatabase appDatabase, FileStorage fileStorage) {
         this.ramenDao = appDatabase.ramenDao();
         this.photoDao = appDatabase.photoDao();
-        this.ramenPhotoJoinDao = appDatabase.ramenPhotoJoinDao();
         this.fileStorage = fileStorage;
     }
 
@@ -58,21 +54,11 @@ public class RamenRepositoryImpl implements RamenRepository {
 
     @Override
     public Flowable<List<Photo>> getPhotosForRamen(String ramenId) {
-        return ramenPhotoJoinDao.getPhotosForRamen(ramenId);
+        return photoDao.getPhotosForRamen(ramenId);
     }
 
     @Override
-    public Completable addPhotoToRamen(Photo photo, Ramen ramen) {
-        return ramenPhotoJoinDao.insert(RamenPhotoJoin.from(ramen, photo));
-    }
-
-    @Override
-    public Completable removePhotoFromRamen(Photo photo, Ramen ramen) {
-        return ramenPhotoJoinDao.delete(RamenPhotoJoin.from(ramen, photo));
-    }
-
-    @Override
-    public Single<Photo> copyPhotoToInternalStorage(Uri contentUri) {
-        return fileStorage.saveImage(contentUri);
+    public Single<String> copyPhotoToInternalStorage(String filename, Uri contentUri) {
+        return fileStorage.saveImage(filename, contentUri);
     }
 }

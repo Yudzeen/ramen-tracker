@@ -20,8 +20,6 @@ public interface RamenRepository {
     Completable delete(Photo photo);
 
     Flowable<List<Photo>> getPhotosForRamen(String ramenId);
-    Completable addPhotoToRamen(Photo photo, Ramen ramen);
-    Completable removePhotoFromRamen(Photo photo, Ramen ramen);
 
-    Single<Photo> copyPhotoToInternalStorage(Uri contentUri);
+    Single<String> copyPhotoToInternalStorage(String filename, Uri contentUri);
 }
