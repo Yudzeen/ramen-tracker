@@ -40,6 +40,7 @@ import ebj.yujinkun.ramentracker.data.models.Ramen;
 import ebj.yujinkun.ramentracker.databinding.FragmentRamenDetailBinding;
 import ebj.yujinkun.ramentracker.di.Injection;
 import ebj.yujinkun.ramentracker.util.DateUtils;
+import ebj.yujinkun.ramentracker.util.SoftKeyboardUtils;
 import timber.log.Timber;
 
 public class RamenDetailFragment extends Fragment {
@@ -99,6 +100,12 @@ public class RamenDetailFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         setupToolbar();
+    }
+
+    @Override
+    public void onDestroyView() {
+        SoftKeyboardUtils.hideSoftKeyboard(requireActivity());
+        super.onDestroyView();
     }
 
     @Override
