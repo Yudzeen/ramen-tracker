@@ -1,6 +1,6 @@
 package ebj.yujinkun.ramentracker.ui.detail;
 
-import android.net.Uri;
+import android.graphics.Bitmap;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
@@ -37,7 +37,7 @@ public class RamenDetailViewModel extends BaseViewModel {
 
     private String initialPhotoLocation;
     private final MutableLiveData<String> photoLocationLiveData = new MutableLiveData<>();
-    private Uri imageUri;
+    private Bitmap bitmap;
 
     private final MutableLiveData<Resource<Ramen>> saveRamenLiveData = new MutableLiveData<>();
     private final MutableLiveData<Resource<Ramen>> deleteRamenLiveData = new MutableLiveData<>();
@@ -167,11 +167,10 @@ public class RamenDetailViewModel extends BaseViewModel {
                 .setFavorite(favorite)
                 .build();
 
-        if (imageUri != null) {
+        if (bitmap != null) {
             String id = UUID.randomUUID().toString();
-            String filename = id + ".png";
             bind(ramenRepository.save(ramen)
-                    .andThen(ramenRepository.copyPhotoToInternalStorage(filename, imageUri))
+                    .andThen(ramenRepository.copyPhotoToInternalStorage(id, bitmap))
                     .map(location -> new Photo(id, ramen.getId(), location))
                     .flatMap(photo -> ramenRepository.save(photo).toSingleDefault(photo))
                     .subscribeOn(Schedulers.io())
@@ -235,7 +234,7 @@ public class RamenDetailViewModel extends BaseViewModel {
         if (initialRamen == null) {
             contentsUpdated = !TextUtils.isEmpty(ramenName) || !TextUtils.isEmpty(shop) ||
                     !TextUtils.isEmpty(location) || !TextUtils.isEmpty(comments) ||
-                    imageUri != null;
+                    bitmap != null;
         } else {
             contentsUpdated = !Objects.equals(initialRamen.getName(), ramenName) ||
                     !Objects.equals(initialRamen.getShop(), shop) ||
@@ -253,8 +252,8 @@ public class RamenDetailViewModel extends BaseViewModel {
         return contentsUpdatedLiveData;
     }
 
-    public void setImageUri(Uri imageUri) {
-        this.imageUri = imageUri;
+    public void setBitmap(Bitmap bitmap) {
+        this.bitmap = bitmap;
     }
 
     public static class Factory implements ViewModelProvider.Factory {

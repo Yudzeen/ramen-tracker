@@ -1,15 +1,15 @@
 package ebj.yujinkun.ramentracker.data;
 
-import android.net.Uri;
+import android.graphics.Bitmap;
 
 import java.util.List;
 
 import ebj.yujinkun.ramentracker.data.files.FileStorage;
 import ebj.yujinkun.ramentracker.data.models.Photo;
+import ebj.yujinkun.ramentracker.data.models.Ramen;
 import ebj.yujinkun.ramentracker.data.room.AppDatabase;
 import ebj.yujinkun.ramentracker.data.room.PhotoDao;
 import ebj.yujinkun.ramentracker.data.room.RamenDao;
-import ebj.yujinkun.ramentracker.data.models.Ramen;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Single;
@@ -58,7 +58,7 @@ public class RamenRepositoryImpl implements RamenRepository {
     }
 
     @Override
-    public Single<String> copyPhotoToInternalStorage(String filename, Uri contentUri) {
-        return fileStorage.saveImage(filename, contentUri);
+    public Single<String> copyPhotoToInternalStorage(String filename, Bitmap bitmap) {
+        return fileStorage.saveImage(filename, bitmap);
     }
 }

@@ -6,12 +6,13 @@ import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.InputType;
-import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -31,6 +32,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 
+import java.io.IOException;
 import java.util.Calendar;
 import java.util.Objects;
 
@@ -48,6 +50,7 @@ public class RamenDetailFragment extends Fragment {
     private static final int STORAGE_PERMISSION_REQUEST_CODE = 1;
 
     private static final int SELECT_IMAGE_REQUEST_CODE = 100;
+    private static final int TAKE_PHOTO_REQUEST_CODE = 200;
 
     private FragmentRamenDetailBinding binding;
     private RamenDetailViewModel viewModel;
@@ -78,7 +81,7 @@ public class RamenDetailFragment extends Fragment {
         parseArguments(getArguments());
         initViews();
 
-        viewModel.getPhotoLocationLiveData().observe(getViewLifecycleOwner(), this::updateRamenPhoto);
+        viewModel.getPhotoLocationLiveData().observe(getViewLifecycleOwner(), location -> updateRamenPhoto(BitmapFactory.decodeFile(location)));
 
         viewModel.getSaveRamenLiveData().observe(getViewLifecycleOwner(), resource -> {
             resource.doOnLoading(this::handleSaveLoading);
@@ -149,10 +152,21 @@ public class RamenDetailFragment extends Fragment {
                 if (data != null) {
                     Uri uri = data.getData();
                     Timber.i("Received uri: %s", uri);
-                    handleRamenPhotoSelected(uri);
+                    try {
+                        Bitmap bitmap = MediaStore.Images.Media.getBitmap(requireActivity().getContentResolver(), uri);
+                        updateRamenPhoto(bitmap);
+                    } catch (IOException e) {
+                        Timber.e(e, "Get bitmap error");
+                    }
                 } else {
                     Timber.e("data is null");
                 }
+            }
+        } else if (requestCode == TAKE_PHOTO_REQUEST_CODE) {
+            if (resultCode == Activity.RESULT_OK) {
+                Bundle extras = data.getExtras();
+                Bitmap bitmap = (Bitmap) extras.get("data");
+                updateRamenPhoto(bitmap);
             }
         }
 
@@ -378,7 +392,8 @@ public class RamenDetailFragment extends Fragment {
     }
 
     private void handleTakePhoto() {
-
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        startActivityForResult(intent, TAKE_PHOTO_REQUEST_CODE);
     }
 
     private void handleSelectImage() {
@@ -393,27 +408,12 @@ public class RamenDetailFragment extends Fragment {
         }
     }
 
-    private void handleRamenPhotoSelected(Uri uri) {
-        if (uri == null) {
-            Timber.e("Uri is null");
-            return;
-        }
-        viewModel.setImageUri(uri);
+    private void updateRamenPhoto(Bitmap bitmap) {
+        Timber.i("Update ramen photo");
+        viewModel.setBitmap(bitmap);
         binding.ramenImagePlaceholder.setVisibility(View.GONE);
         binding.addPhotoIcon.setVisibility(View.GONE);
-        binding.ramenImage.setImageURI(uri);
-        binding.ramenImage.setVisibility(View.VISIBLE);
-    }
-
-    private void updateRamenPhoto(String path) {
-        if (TextUtils.isEmpty(path)) {
-            Timber.w("path is empty");
-            return;
-        }
-        Timber.i("Showing ramen image: %s", path);
-        binding.ramenImagePlaceholder.setVisibility(View.GONE);
-        binding.addPhotoIcon.setVisibility(View.GONE);
-        binding.ramenImage.setImageBitmap(BitmapFactory.decodeFile(path));
+        binding.ramenImage.setImageBitmap(bitmap);
         binding.ramenImage.setVisibility(View.VISIBLE);
     }
 

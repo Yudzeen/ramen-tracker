@@ -1,7 +1,7 @@
 package ebj.yujinkun.ramentracker.data.files;
 
 import android.app.Application;
-import android.net.Uri;
+import android.graphics.Bitmap;
 
 import ebj.yujinkun.ramentracker.util.FileUtils;
 import io.reactivex.Single;
@@ -16,10 +16,10 @@ public class FileStorageImpl implements FileStorage {
     }
 
     @Override
-    public Single<String> saveImage(String filename, Uri contentUri) {
+    public Single<String> saveImage(String filename, Bitmap bitmap) {
         return Single.fromCallable(() -> {
-            Timber.i("Copy photo: %s", contentUri);
-            return FileUtils.copyFileToInternalStorage(application, contentUri, filename);
+            Timber.i("Copy photo: %s", bitmap);
+            return FileUtils.saveBitmapToInternalStorage(application, bitmap, filename);
         });
     }
 

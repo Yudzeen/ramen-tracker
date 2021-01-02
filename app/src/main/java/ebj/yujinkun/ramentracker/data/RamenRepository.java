@@ -1,6 +1,6 @@
 package ebj.yujinkun.ramentracker.data;
 
-import android.net.Uri;
+import android.graphics.Bitmap;
 
 import java.util.List;
 
@@ -21,5 +21,5 @@ public interface RamenRepository {
 
     Flowable<List<Photo>> getPhotosForRamen(String ramenId);
 
-    Single<String> copyPhotoToInternalStorage(String filename, Uri contentUri);
+    Single<String> copyPhotoToInternalStorage(String filename, Bitmap bitmap);
 }
