@@ -16,7 +16,7 @@
     <string name="date_hint">Date</string>
     <string name="delete">Delete</string>
     <string name="add_photo">Add photo</string>
-    <string name="add_image">Add image</string>
+    <string name="update_image">Update image</string>
     <string name="cancel">Cancel</string>
     <string name="ramen_image">Ramen image</string>
 </resources>

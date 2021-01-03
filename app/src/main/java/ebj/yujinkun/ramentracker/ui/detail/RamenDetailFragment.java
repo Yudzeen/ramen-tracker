@@ -204,7 +204,8 @@ public class RamenDetailFragment extends Fragment {
         initRamenNameEditText();
         initCommentsEditText();
         initDateField();
-        binding.ramenImagePlaceholder.setOnClickListener(view -> showAddPhotoDialog());
+        binding.ramenImagePlaceholder.setOnClickListener(view -> showUpdatePhotoDialog());
+        binding.ramenImage.setOnClickListener(view -> showUpdatePhotoDialog());
         binding.fab.setOnClickListener(view -> viewModel.saveRamen());
     }
 
@@ -371,10 +372,10 @@ public class RamenDetailFragment extends Fragment {
         alertDialog.show();
     }
 
-    private void showAddPhotoDialog() {
+    private void showUpdatePhotoDialog() {
         AlertDialog alertDialog = new AlertDialog.Builder(requireActivity())
-                .setTitle(R.string.add_image)
-                .setItems(R.array.add_photo, (dialog, which) -> {
+                .setTitle(R.string.update_image)
+                .setItems(R.array.update_photo, (dialog, which) -> {
                     switch (which) {
                         case 0:
                             handleTakePhoto();

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string-array name="add_photo">
+    <string-array name="update_photo">
         <item>Take photo</item>
         <item>Choose image</item>
     </string-array>
