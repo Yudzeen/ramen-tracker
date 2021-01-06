@@ -2,12 +2,16 @@ package ebj.yujinkun.ramentracker.ui.list;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
@@ -74,6 +78,35 @@ public class RamenListFragment extends Fragment {
         viewModel.loadAllRamen();
     }
 
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        setupToolbar();
+    }
+
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        inflater.inflate(R.menu.action_bar_ramen_list, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        final int id = item.getItemId();
+
+        if (id == R.id.action_about) {
+            navigateToAboutScreen();
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void setupToolbar() {
+        setHasOptionsMenu(true);
+        AppCompatActivity activity = (AppCompatActivity) requireActivity();
+        activity.setSupportActionBar(binding.toolbar);
+    }
+
     private void handleRamenItemSwiped(int position) {
         Ramen ramen = ramenAdapter.getItemAt(position);
         viewModel.delete(ramen);
@@ -127,5 +160,10 @@ public class RamenListFragment extends Fragment {
                 RamenListFragmentDirections.actionRamenListToRamenDetail();
         action.setRamen(ramen);
         NavHostFragment.findNavController(this).navigate(action);
+    }
+
+    private void navigateToAboutScreen() {
+        NavHostFragment.findNavController(this)
+                .navigate(RamenListFragmentDirections.actionRamenListFragmentToAboutFragment());
     }
 }

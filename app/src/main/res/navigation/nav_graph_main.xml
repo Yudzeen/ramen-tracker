@@ -13,6 +13,9 @@
         <action
             android:id="@+id/action_ramenList_to_ramenDetail"
             app:destination="@id/ramenDetailFragment" />
+        <action
+            android:id="@+id/action_ramenListFragment_to_aboutFragment"
+            app:destination="@id/aboutFragment" />
     </fragment>
 
     <fragment
@@ -26,4 +29,11 @@
             app:argType="ebj.yujinkun.ramentracker.data.models.Ramen"
             app:nullable="true" />
     </fragment>
+
+    <fragment
+        android:id="@+id/aboutFragment"
+        android:name="ebj.yujinkun.ramentracker.ui.about.AboutFragment"
+        android:label="@string/about"
+        tools:layout="@layout/fragment_about" />
+
 </navigation>
