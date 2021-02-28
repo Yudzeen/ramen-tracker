@@ -32,7 +32,7 @@
             android:clickable="true"
             android:focusable="true"
             android:focusableInTouchMode="true"
-            android:paddingBottom="72dp">
+            android:paddingBottom="88dp">
 
             <FrameLayout
                 android:id="@+id/ramenImageLayout"
@@ -186,14 +186,13 @@
 
     </ScrollView>
 
-    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|center"
+        android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
         android:contentDescription="@string/save_changes"
-        android:text="@string/save_changes"
-        app:icon="@drawable/ic_save" />
+        android:src="@drawable/ic_save" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
