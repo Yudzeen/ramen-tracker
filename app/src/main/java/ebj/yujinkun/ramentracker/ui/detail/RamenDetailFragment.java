@@ -218,13 +218,6 @@ public class RamenDetailFragment extends Fragment {
     private void initShopEditText() {
         EditText editText = binding.shop.getEditText();
         editText.setText(viewModel.getShop());
-        editText.setOnFocusChangeListener((v, hasFocus) -> {
-            if(hasFocus) {
-                v.post(() -> binding.scrollView.smoothScrollTo(0, editText.getBottom() + binding.fab.getHeight()));
-            } else {
-                SoftKeyboardUtils.hideSoftKeyboard(v);
-            }
-        });
         editText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -246,11 +239,6 @@ public class RamenDetailFragment extends Fragment {
     private void initLocationEditText() {
         EditText editText = binding.location.getEditText();
         editText.setText(viewModel.getLocation());
-        editText.setOnFocusChangeListener((v, hasFocus) -> {
-            if(!hasFocus) {
-                SoftKeyboardUtils.hideSoftKeyboard(v);
-            }
-        });
         editText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -272,11 +260,6 @@ public class RamenDetailFragment extends Fragment {
     private void initRamenNameEditText() {
         EditText editText = binding.ramenName.getEditText();
         editText.setText(viewModel.getRamenName());
-        editText.setOnFocusChangeListener((v, hasFocus) -> {
-            if(!hasFocus) {
-                SoftKeyboardUtils.hideSoftKeyboard(v);
-            }
-        });
         editText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -298,11 +281,6 @@ public class RamenDetailFragment extends Fragment {
     private void initCommentsEditText() {
         EditText editText = binding.comments.getEditText();
         editText.setText(viewModel.getComments());
-        editText.setOnFocusChangeListener((v, hasFocus) -> {
-            if(!hasFocus) {
-                SoftKeyboardUtils.hideSoftKeyboard(v);
-            }
-        });
         editText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
