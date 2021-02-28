@@ -20,6 +20,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
@@ -95,8 +96,13 @@ public class RamenDetailFragment extends Fragment {
             resource.doOnError(this::handleDeleteError);
         });
 
-        viewModel.getContentsUpdatedLiveData().observe(getViewLifecycleOwner(), contentsUpdated ->
-                binding.fab.setVisibility(contentsUpdated ? View.VISIBLE : View.GONE));
+        viewModel.getUnsavedChangesLiveData().observe(getViewLifecycleOwner(), hasUnsavedChanges -> {
+            if (hasUnsavedChanges) {
+                showSaveChangesButton();
+            } else {
+                hideSaveChangesButton();
+            }
+        });
     }
 
     @Override
@@ -210,8 +216,16 @@ public class RamenDetailFragment extends Fragment {
     }
 
     private void initShopEditText() {
-        binding.shop.getEditText().setText(viewModel.getShop());
-        binding.shop.getEditText().addTextChangedListener(new TextWatcher() {
+        EditText editText = binding.shop.getEditText();
+        editText.setText(viewModel.getShop());
+        editText.setOnFocusChangeListener((v, hasFocus) -> {
+            if(hasFocus) {
+                v.post(() -> binding.scrollView.smoothScrollTo(0, editText.getBottom() + binding.fab.getHeight()));
+            } else {
+                SoftKeyboardUtils.hideSoftKeyboard(v);
+            }
+        });
+        editText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
@@ -230,8 +244,14 @@ public class RamenDetailFragment extends Fragment {
     }
 
     private void initLocationEditText() {
-        binding.location.getEditText().setText(viewModel.getLocation());
-        binding.location.getEditText().addTextChangedListener(new TextWatcher() {
+        EditText editText = binding.location.getEditText();
+        editText.setText(viewModel.getLocation());
+        editText.setOnFocusChangeListener((v, hasFocus) -> {
+            if(!hasFocus) {
+                SoftKeyboardUtils.hideSoftKeyboard(v);
+            }
+        });
+        editText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
@@ -250,8 +270,14 @@ public class RamenDetailFragment extends Fragment {
     }
 
     private void initRamenNameEditText() {
-        binding.ramenName.getEditText().setText(viewModel.getRamenName());
-        binding.ramenName.getEditText().addTextChangedListener(new TextWatcher() {
+        EditText editText = binding.ramenName.getEditText();
+        editText.setText(viewModel.getRamenName());
+        editText.setOnFocusChangeListener((v, hasFocus) -> {
+            if(!hasFocus) {
+                SoftKeyboardUtils.hideSoftKeyboard(v);
+            }
+        });
+        editText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
@@ -270,8 +296,14 @@ public class RamenDetailFragment extends Fragment {
     }
 
     private void initCommentsEditText() {
-        binding.comments.getEditText().setText(viewModel.getComments());
-        binding.comments.getEditText().addTextChangedListener(new TextWatcher() {
+        EditText editText = binding.comments.getEditText();
+        editText.setText(viewModel.getComments());
+        editText.setOnFocusChangeListener((v, hasFocus) -> {
+            if(!hasFocus) {
+                SoftKeyboardUtils.hideSoftKeyboard(v);
+            }
+        });
+        editText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
@@ -354,7 +386,7 @@ public class RamenDetailFragment extends Fragment {
     }
 
     private void onBackPressed() {
-        boolean contentsUpdated = Objects.requireNonNull(viewModel.getContentsUpdatedLiveData().getValue());
+        boolean contentsUpdated = Objects.requireNonNull(viewModel.getUnsavedChangesLiveData().getValue());
         if (contentsUpdated) {
             showConfirmationDialog();
         } else {
@@ -416,6 +448,14 @@ public class RamenDetailFragment extends Fragment {
         binding.addPhotoIcon.setVisibility(View.GONE);
         binding.ramenImage.setImageBitmap(bitmap);
         binding.ramenImage.setVisibility(View.VISIBLE);
+    }
+
+    private void showSaveChangesButton() {
+        binding.fab.setVisibility(View.VISIBLE);
+    }
+
+    private void hideSaveChangesButton() {
+        binding.fab.setVisibility(View.GONE);
     }
 
     private void navigateUp() {

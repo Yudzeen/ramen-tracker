@@ -42,7 +42,7 @@ public class RamenDetailViewModel extends BaseViewModel {
     private final MutableLiveData<Resource<Ramen>> saveRamenLiveData = new MutableLiveData<>();
     private final MutableLiveData<Resource<Ramen>> deleteRamenLiveData = new MutableLiveData<>();
 
-    private final MutableLiveData<Boolean> contentsUpdatedLiveData = new MutableLiveData<>();
+    private final MutableLiveData<Boolean> unsavedChangesLiveData = new MutableLiveData<>();
 
     public RamenDetailViewModel(RamenRepository ramenRepository) {
         this.ramenRepository = ramenRepository;
@@ -69,7 +69,7 @@ public class RamenDetailViewModel extends BaseViewModel {
             favorite = false;
             initialPhotoLocation = "";
         }
-        contentsUpdatedLiveData.setValue(false);
+        unsavedChangesLiveData.setValue(false);
     }
 
     private void loadPhotosForRamen(Ramen ramen) {
@@ -209,7 +209,7 @@ public class RamenDetailViewModel extends BaseViewModel {
             initialPhotoLocation = photo.getLocation();
             photoLocationLiveData.setValue(initialPhotoLocation);
         }
-        contentsUpdatedLiveData.setValue(false);
+        unsavedChangesLiveData.setValue(false);
     }
 
     public LiveData<Resource<Ramen>> getSaveRamenLiveData() {
@@ -245,11 +245,11 @@ public class RamenDetailViewModel extends BaseViewModel {
                     !Objects.equals(initialRamen.isFavorite(), favorite) ||
                     !Objects.equals(initialPhotoLocation, photoLocationLiveData.getValue());
         }
-        contentsUpdatedLiveData.setValue(contentsUpdated);
+        unsavedChangesLiveData.setValue(contentsUpdated);
     }
 
-    public MutableLiveData<Boolean> getContentsUpdatedLiveData() {
-        return contentsUpdatedLiveData;
+    public MutableLiveData<Boolean> getUnsavedChangesLiveData() {
+        return unsavedChangesLiveData;
     }
 
     public void setBitmap(Bitmap bitmap) {

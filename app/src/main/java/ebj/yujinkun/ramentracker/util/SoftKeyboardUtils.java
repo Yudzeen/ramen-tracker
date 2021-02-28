@@ -22,4 +22,12 @@ public class SoftKeyboardUtils {
         view.clearFocus();
     }
 
+    public static void hideSoftKeyboard(@NonNull View view) {
+        InputMethodManager imm = (InputMethodManager) view.getContext().getSystemService(INPUT_METHOD_SERVICE);
+        if (imm != null) {
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
+        view.clearFocus();
+    }
+
 }
