@@ -170,7 +170,7 @@ public class RamenDetailViewModel extends BaseViewModel {
         if (bitmap != null) {
             String id = UUID.randomUUID().toString();
             bind(ramenRepository.save(ramen)
-                    .andThen(ramenRepository.copyPhotoToInternalStorage(id, bitmap))
+                    .andThen(ramenRepository.saveBitmap(id, bitmap))
                     .map(location -> new Photo(id, ramen.getId(), location))
                     .flatMap(photo -> ramenRepository.save(photo).toSingleDefault(photo))
                     .subscribeOn(Schedulers.io())

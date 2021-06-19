@@ -21,5 +21,5 @@ public interface RamenRepository {
 
     Flowable<List<Photo>> getPhotosForRamen(String ramenId);
 
-    Single<String> copyPhotoToInternalStorage(String filename, Bitmap bitmap);
+    Single<String> saveBitmap(String filename, Bitmap bitmap);
 }

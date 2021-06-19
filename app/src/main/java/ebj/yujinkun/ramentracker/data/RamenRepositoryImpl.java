@@ -58,7 +58,7 @@ public class RamenRepositoryImpl implements RamenRepository {
     }
 
     @Override
-    public Single<String> copyPhotoToInternalStorage(String filename, Bitmap bitmap) {
+    public Single<String> saveBitmap(String filename, Bitmap bitmap) {
         return fileStorage.saveImage(filename, bitmap);
     }
 }
