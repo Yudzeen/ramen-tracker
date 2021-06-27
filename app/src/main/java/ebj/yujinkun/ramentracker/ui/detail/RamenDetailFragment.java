@@ -7,7 +7,6 @@ import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -39,6 +38,7 @@ import java.util.Objects;
 
 import ebj.yujinkun.ramentracker.R;
 import ebj.yujinkun.ramentracker.data.RamenRepository;
+import ebj.yujinkun.ramentracker.data.files.FileStorage;
 import ebj.yujinkun.ramentracker.data.models.Ramen;
 import ebj.yujinkun.ramentracker.databinding.FragmentRamenDetailBinding;
 import ebj.yujinkun.ramentracker.di.Injection;
@@ -77,12 +77,17 @@ public class RamenDetailFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         RamenRepository ramenRepository = Injection.getRamenRepository(requireActivity().getApplication());
-        viewModel = new ViewModelProvider(this, new RamenDetailViewModel.Factory(ramenRepository))
+        FileStorage fileStorage = Injection.getFileStorage(requireActivity().getApplication());
+        viewModel = new ViewModelProvider(this, new RamenDetailViewModel.Factory(ramenRepository, fileStorage))
                 .get(RamenDetailViewModel.class);
         parseArguments(getArguments());
         initViews();
 
-        viewModel.getPhotoLocationLiveData().observe(getViewLifecycleOwner(), location -> updateRamenPhoto(BitmapFactory.decodeFile(location)));
+        viewModel.getLoadPhotoLiveData().observe(getViewLifecycleOwner(), resource -> {
+            resource.doOnLoading(this::handlePhotoLoading);
+            resource.doOnSuccess(this::handlePhotoSuccess);
+            resource.doOnError(this::handlePhotoError);
+        });
 
         viewModel.getSaveRamenLiveData().observe(getViewLifecycleOwner(), resource -> {
             resource.doOnLoading(this::handleSaveLoading);
@@ -96,7 +101,7 @@ public class RamenDetailFragment extends Fragment {
             resource.doOnError(this::handleDeleteError);
         });
 
-        viewModel.getUnsavedChangesLiveData().observe(getViewLifecycleOwner(), hasUnsavedChanges -> {
+        viewModel.getDataUpdatedLiveData().observe(getViewLifecycleOwner(), hasUnsavedChanges -> {
             if (hasUnsavedChanges) {
                 showSaveChangesButton();
             } else {
@@ -126,7 +131,7 @@ public class RamenDetailFragment extends Fragment {
     public void onPrepareOptionsMenu(@NonNull Menu menu) {
         menu.findItem(R.id.action_favorite).setIcon(viewModel.isFavorite() ?
                 R.drawable.ic_favorite : R.drawable.ic_favorite_border);
-        menu.findItem(R.id.action_delete).setVisible(viewModel.getInitialRamen() != null);
+        menu.findItem(R.id.action_delete).setVisible(viewModel.isDeletable());
     }
 
     @Override
@@ -160,6 +165,7 @@ public class RamenDetailFragment extends Fragment {
                     Timber.i("Received uri: %s", uri);
                     try {
                         Bitmap bitmap = MediaStore.Images.Media.getBitmap(requireActivity().getContentResolver(), uri);
+                        viewModel.updateSelectedPhoto(bitmap);
                         updateRamenPhoto(bitmap);
                     } catch (IOException e) {
                         Timber.e(e, "Get bitmap error");
@@ -172,6 +178,7 @@ public class RamenDetailFragment extends Fragment {
             if (resultCode == Activity.RESULT_OK) {
                 Bundle extras = data.getExtras();
                 Bitmap bitmap = (Bitmap) extras.get("data");
+                viewModel.updateSelectedPhoto(bitmap);
                 updateRamenPhoto(bitmap);
             }
         }
@@ -335,6 +342,19 @@ public class RamenDetailFragment extends Fragment {
         viewModel.deleteRamen();
     }
 
+    private void handlePhotoLoading() {
+        Timber.i("Loading photo");
+    }
+
+    private void handlePhotoError(Throwable error) {
+        Timber.e(error, "Load photo error");
+    }
+
+    private void handlePhotoSuccess(Bitmap bitmap) {
+        Timber.i("Load photo success");
+        updateRamenPhoto(bitmap);
+    }
+
     private void handleDeleteLoading() {
         Timber.i("Deleting");
     }
@@ -355,7 +375,7 @@ public class RamenDetailFragment extends Fragment {
 
     private void handleSaveSuccess(Ramen ramen) {
         Timber.i("Save success: %s", ramen);
-        Toast.makeText(requireContext(), "Saved", Toast.LENGTH_SHORT).show();
+        NavHostFragment.findNavController(this).navigateUp();
     }
 
     private void handleSaveError(Throwable error) {
@@ -364,7 +384,7 @@ public class RamenDetailFragment extends Fragment {
     }
 
     private void onBackPressed() {
-        boolean contentsUpdated = Objects.requireNonNull(viewModel.getUnsavedChangesLiveData().getValue());
+        boolean contentsUpdated = Objects.requireNonNull(viewModel.getDataUpdatedLiveData().getValue());
         if (contentsUpdated) {
             showConfirmationDialog();
         } else {
@@ -421,7 +441,6 @@ public class RamenDetailFragment extends Fragment {
 
     private void updateRamenPhoto(Bitmap bitmap) {
         Timber.i("Update ramen photo");
-        viewModel.setBitmap(bitmap);
         binding.ramenImagePlaceholder.setVisibility(View.GONE);
         binding.addPhotoIcon.setVisibility(View.GONE);
         binding.ramenImage.setImageBitmap(bitmap);

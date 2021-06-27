@@ -7,11 +7,17 @@ import io.reactivex.Single;
 public interface FileStorage {
 
     /**
-     * Save image from a content uri in app's internal storage
-     * @param filename name of image when saved to internal storage
-     * @param bitmap bitmap of the image
-     * @return string path in internal storage
+     * Save bitmap
+     * @param bitmap bitmap to save
+     * @return String URI of saved location
      */
-    Single<String> saveImage(String filename, Bitmap bitmap);
+    Single<String> saveBitmap(Bitmap bitmap);
+
+    /**
+     * Loads bitmap of given URI
+     * @param bitmapUri String URI of saved location
+     * @return bitmap loaded
+     */
+    Single<Bitmap> loadBitmap(String bitmapUri);
 
 }

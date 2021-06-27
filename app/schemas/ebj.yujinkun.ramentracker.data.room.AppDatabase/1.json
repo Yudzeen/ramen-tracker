@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "704a122cc58366b46b5202d56894fb8c",
+    "identityHash": "981b41bfb6d40709ff6cb07d47eea459",
     "entities": [
       {
         "tableName": "ramen",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT, `shop` TEXT, `location` TEXT, `date` TEXT, `comments` TEXT, `favorite` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT, `shop` TEXT, `location` TEXT, `date` TEXT, `comments` TEXT, `favorite` INTEGER NOT NULL, `photoUri` TEXT, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -49,6 +49,12 @@
             "columnName": "favorite",
             "affinity": "INTEGER",
             "notNull": true
+          },
+          {
+            "fieldPath": "photoUri",
+            "columnName": "photoUri",
+            "affinity": "TEXT",
+            "notNull": false
           }
         ],
         "primaryKey": {
@@ -68,44 +74,12 @@
           }
         ],
         "foreignKeys": []
-      },
-      {
-        "tableName": "photos",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`photo_id` TEXT NOT NULL, `ramen_id` TEXT, `location` TEXT, PRIMARY KEY(`photo_id`))",
-        "fields": [
-          {
-            "fieldPath": "photoId",
-            "columnName": "photo_id",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "ramenId",
-            "columnName": "ramen_id",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "location",
-            "columnName": "location",
-            "affinity": "TEXT",
-            "notNull": false
-          }
-        ],
-        "primaryKey": {
-          "columnNames": [
-            "photo_id"
-          ],
-          "autoGenerate": false
-        },
-        "indices": [],
-        "foreignKeys": []
       }
     ],
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '704a122cc58366b46b5202d56894fb8c')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '981b41bfb6d40709ff6cb07d47eea459')"
     ]
   }
 }

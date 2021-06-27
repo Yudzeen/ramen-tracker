@@ -1,19 +1,18 @@
 package ebj.yujinkun.ramentracker.ui.detail;
 
 import android.graphics.Bitmap;
-import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.LiveDataReactiveStreams;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
-import java.util.Objects;
 import java.util.UUID;
 
 import ebj.yujinkun.ramentracker.data.RamenRepository;
-import ebj.yujinkun.ramentracker.data.models.Photo;
+import ebj.yujinkun.ramentracker.data.files.FileStorage;
 import ebj.yujinkun.ramentracker.data.models.Ramen;
 import ebj.yujinkun.ramentracker.ui.common.BaseViewModel;
 import ebj.yujinkun.ramentracker.util.DateUtils;
@@ -25,191 +24,91 @@ import timber.log.Timber;
 public class RamenDetailViewModel extends BaseViewModel {
 
     private final RamenRepository ramenRepository;
+    private final FileStorage fileStorage;
 
-    private Ramen initialRamen;
-    private String id;
-    private String ramenName;
-    private String shop;
-    private String location;
-    private String date;
-    private String comments;
-    private boolean favorite;
+    private final RamenDetailDataHolder ramenDetailDataHolder = new RamenDetailDataHolder();
 
-    private String initialPhotoLocation;
-    private final MutableLiveData<String> photoLocationLiveData = new MutableLiveData<>();
-    private Bitmap bitmap;
-
+    private final MutableLiveData<Resource<Bitmap>> loadPhotoLiveData = new MutableLiveData<>();
     private final MutableLiveData<Resource<Ramen>> saveRamenLiveData = new MutableLiveData<>();
     private final MutableLiveData<Resource<Ramen>> deleteRamenLiveData = new MutableLiveData<>();
 
-    private final MutableLiveData<Boolean> unsavedChangesLiveData = new MutableLiveData<>();
+    private final LiveData<Boolean> dataUpdatedLiveData =
+            LiveDataReactiveStreams.fromPublisher(ramenDetailDataHolder.getDataUpdatedObservable());
 
-    public RamenDetailViewModel(RamenRepository ramenRepository) {
+    public RamenDetailViewModel(RamenRepository ramenRepository, FileStorage fileStorage) {
         this.ramenRepository = ramenRepository;
+        this.fileStorage = fileStorage;
     }
 
     public void initValues(Ramen ramen) {
         if (ramen != null) {
-            this.initialRamen = ramen;
-            id = ramen.getId();
-            ramenName = ramen.getName();
-            shop = ramen.getShop();
-            location = ramen.getLocation();
-            date = ramen.getDate();
-            comments = ramen.getComments();
-            favorite = ramen.isFavorite();
-            loadPhotosForRamen(ramen);
+            ramenDetailDataHolder
+                    .setInitialRamen(ramen)
+                    .setId(ramen.getId())
+                    .setName(ramen.getName())
+                    .setShop(ramen.getShop())
+                    .setLocation(ramen.getLocation())
+                    .setDate(ramen.getDate())
+                    .setComments(ramen.getComments())
+                    .setFavorite(ramen.isFavorite())
+                    .setPhotoUri(ramen.getPhotoUri());
+            loadPhotoForRamen(ramen);
         } else {
-            id = UUID.randomUUID().toString();
-            ramenName = "";
-            shop = "";
-            location = "";
-            date = DateUtils.getCurrentDate();
-            comments = "";
-            favorite = false;
-            initialPhotoLocation = "";
+            ramenDetailDataHolder
+                    .setInitialRamen(null)
+                    .setId(UUID.randomUUID().toString())
+                    .setName("")
+                    .setShop("")
+                    .setLocation("")
+                    .setDate(DateUtils.getCurrentDate())
+                    .setComments("")
+                    .setFavorite(false)
+                    .setPhotoUri("");
         }
-        unsavedChangesLiveData.setValue(false);
     }
 
-    private void loadPhotosForRamen(Ramen ramen) {
-        bind(ramenRepository.getPhotosForRamen(ramen.getId())
+    private void loadPhotoForRamen(Ramen ramen) {
+        bind(fileStorage.loadBitmap(ramen.getPhotoUri())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(photos -> {
-                   if (photos.size() > 0) {
-                       photoLocationLiveData.setValue(photos.get(0).getLocation());
-                   } else {
-                       Timber.i("No photos for ramen: %s", ramen);
-                   }
-                }));
+                .doOnSubscribe(disposable -> loadPhotoLiveData.setValue(Resource.loading()))
+                .subscribe(bitmap -> loadPhotoLiveData.setValue(Resource.success(bitmap)),
+                        throwable -> Timber.e(throwable, "Error loading photo for %s", ramen)));
     }
 
-    public Ramen getInitialRamen() {
-        return initialRamen;
+    public LiveData<Resource<Bitmap>> getLoadPhotoLiveData() {
+        return loadPhotoLiveData;
     }
 
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-        onDataChanged();
-    }
-
-    public String getRamenName() {
-        return ramenName;
-    }
-
-    public void setRamenName(String ramenName) {
-        this.ramenName = ramenName;
-        onDataChanged();
-    }
-
-    public String getShop() {
-        return shop;
-    }
-
-    public void setShop(String shop) {
-        this.shop = shop;
-        onDataChanged();
-    }
-
-    public String getLocation() {
-        return location;
-    }
-
-    public void setLocation(String location) {
-        this.location = location;
-        onDataChanged();
-    }
-
-    public String getDate() {
-        return date;
-    }
-
-    public void setDate(String date) {
-        this.date = date;
-        onDataChanged();
-    }
-
-    public String getComments() {
-        return comments;
-    }
-
-    public void setComments(String comments) {
-        this.comments = comments;
-        onDataChanged();
-    }
-
-    public boolean isFavorite() {
-        return favorite;
-    }
-
-    public void setFavorite(boolean favorite) {
-        this.favorite = favorite;
-        onDataChanged();
-    }
-
-    public LiveData<String> getPhotoLocationLiveData() {
-        return photoLocationLiveData;
-    }
-
+    // TODO: delete old image if updated
     public void saveRamen() {
-        Ramen ramen = new Ramen.Builder()
-                .setId(id)
-                .setName(ramenName)
-                .setShop(shop)
-                .setLocation(location)
-                .setDate(date)
-                .setComments(comments)
-                .setFavorite(favorite)
-                .build();
-
+        Ramen.Builder ramenBuilder = ramenDetailDataHolder.toRamenBuilder();
+        Bitmap bitmap = ramenDetailDataHolder.getBitmap();
         if (bitmap != null) {
-            String id = UUID.randomUUID().toString();
-            bind(ramenRepository.save(ramen)
-                    .andThen(ramenRepository.copyPhotoToInternalStorage(id, bitmap))
-                    .map(location -> new Photo(id, ramen.getId(), location))
-                    .flatMap(photo -> ramenRepository.save(photo).toSingleDefault(photo))
+            saveRamenLiveData.setValue(Resource.loading());
+            bind(fileStorage.saveBitmap(bitmap)
+                    .map(ramenBuilder::setPhotoUri)
+                    .flatMap(builder -> {
+                        Ramen ramen = ramenBuilder.build();
+                        return ramenRepository.save(ramen).toSingleDefault(ramen);
+                    })
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(photo -> {
-                        updateInitialValues(ramen, photo);
-                        saveRamenLiveData.setValue(Resource.success(ramen));
-                    }, throwable -> saveRamenLiveData.setValue(Resource.error(throwable))));
+                    .subscribe(this::onSaveSuccess,
+                            throwable -> saveRamenLiveData.setValue(Resource.error(throwable))));
         } else {
+            Ramen ramen = ramenBuilder.build();
             bind(ramenRepository.save(ramen)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .doOnSubscribe(disposable -> saveRamenLiveData.setValue(Resource.loading()))
-                    .subscribe(() -> {
-                                updateInitialValues(ramen, null);
-                                saveRamenLiveData.setValue(Resource.success(ramen));
-                            },
+                    .subscribe(() -> onSaveSuccess(ramen),
                             throwable -> saveRamenLiveData.setValue(Resource.error(throwable))));
-
         }
     }
 
-    private void updateInitialValues(Ramen ramen, Photo photo) {
-        if (ramen != null) {
-            this.initialRamen = ramen;
-            id = ramen.getId();
-            ramenName = ramen.getName();
-            shop = ramen.getShop();
-            location = ramen.getLocation();
-            date = ramen.getDate();
-            comments = ramen.getComments();
-            favorite = ramen.isFavorite();
-        }
-
-        if (photo != null) {
-            initialPhotoLocation = photo.getLocation();
-            photoLocationLiveData.setValue(initialPhotoLocation);
-        }
-        unsavedChangesLiveData.setValue(false);
+    private void onSaveSuccess(Ramen ramen) {
+        saveRamenLiveData.setValue(Resource.success(ramen));
     }
 
     public LiveData<Resource<Ramen>> getSaveRamenLiveData() {
@@ -217,11 +116,11 @@ public class RamenDetailViewModel extends BaseViewModel {
     }
 
     public void deleteRamen() {
-        bind(ramenRepository.delete(initialRamen)
+        bind(ramenRepository.delete(ramenDetailDataHolder.getInitialRamen())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnSubscribe(disposable -> deleteRamenLiveData.setValue(Resource.loading()))
-                .subscribe(() -> deleteRamenLiveData.setValue(Resource.success(initialRamen)),
+                .subscribe(() -> deleteRamenLiveData.setValue(Resource.success(ramenDetailDataHolder.getInitialRamen())),
                         throwable -> deleteRamenLiveData.setValue(Resource.error(throwable))));
     }
 
@@ -229,46 +128,82 @@ public class RamenDetailViewModel extends BaseViewModel {
         return deleteRamenLiveData;
     }
 
-    private void onDataChanged() {
-        boolean contentsUpdated;
-        if (initialRamen == null) {
-            contentsUpdated = !TextUtils.isEmpty(ramenName) || !TextUtils.isEmpty(shop) ||
-                    !TextUtils.isEmpty(location) || !TextUtils.isEmpty(comments) ||
-                    bitmap != null;
-        } else {
-            contentsUpdated = !Objects.equals(initialRamen.getName(), ramenName) ||
-                    !Objects.equals(initialRamen.getShop(), shop) ||
-                    !Objects.equals(initialRamen.getLocation(), location) ||
-                    !Objects.equals(DateUtils.formatDate(initialRamen.getDate(), DateUtils.DATE_FORMAT_DEFAULT, DateUtils.DATE_FORMAT_DATE_ONLY),
-                            DateUtils.formatDate(date, DateUtils.DATE_FORMAT_DEFAULT, DateUtils.DATE_FORMAT_DATE_ONLY)) ||
-                    !Objects.equals(initialRamen.getComments(), comments) ||
-                    !Objects.equals(initialRamen.isFavorite(), favorite) ||
-                    !Objects.equals(initialPhotoLocation, photoLocationLiveData.getValue());
-        }
-        unsavedChangesLiveData.setValue(contentsUpdated);
+    public LiveData<Boolean> getDataUpdatedLiveData() {
+        return dataUpdatedLiveData;
     }
 
-    public MutableLiveData<Boolean> getUnsavedChangesLiveData() {
-        return unsavedChangesLiveData;
+    public boolean isFavorite() {
+        return ramenDetailDataHolder.isFavorite();
     }
 
-    public void setBitmap(Bitmap bitmap) {
-        this.bitmap = bitmap;
+    public void setFavorite(boolean favorite) {
+        ramenDetailDataHolder.setFavorite(favorite);
+    }
+
+    public boolean isDeletable() {
+        return ramenDetailDataHolder.getInitialRamen() != null;
+    }
+
+    public String getShop() {
+        return ramenDetailDataHolder.getShop();
+    }
+
+    public void setShop(String shop) {
+        ramenDetailDataHolder.setShop(shop);
+    }
+
+    public String getLocation() {
+        return ramenDetailDataHolder.getLocation();
+    }
+
+    public void setLocation(String location) {
+        ramenDetailDataHolder.setLocation(location);
+    }
+
+    public String getRamenName() {
+        return ramenDetailDataHolder.getName();
+    }
+
+    public void setRamenName(String ramenName) {
+        ramenDetailDataHolder.setName(ramenName);
+    }
+
+    public String getComments() {
+        return ramenDetailDataHolder.getComments();
+    }
+
+    public void setComments(String comments) {
+        ramenDetailDataHolder.setComments(comments);
+    }
+
+    public String getDate() {
+        return ramenDetailDataHolder.getDate();
+    }
+
+    public void setDate(String date) {
+        ramenDetailDataHolder.setDate(date);
+    }
+
+    public void updateSelectedPhoto(Bitmap bitmap) {
+        ramenDetailDataHolder.setBitmap(bitmap);
+        ramenDetailDataHolder.setPhotoUri("");  // set to empty to mark as data changed
     }
 
     public static class Factory implements ViewModelProvider.Factory {
 
         private final RamenRepository ramenRepository;
+        private final FileStorage fileStorage;
 
-        public Factory(RamenRepository ramenRepository) {
+        public Factory(RamenRepository ramenRepository, FileStorage fileStorage) {
             this.ramenRepository = ramenRepository;
+            this.fileStorage = fileStorage;
         }
 
         @NonNull
         @Override
         public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
             //noinspection unchecked
-            return (T) new RamenDetailViewModel(ramenRepository);
+            return (T) new RamenDetailViewModel(ramenRepository, fileStorage);
         }
     }
 
