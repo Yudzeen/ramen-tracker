@@ -87,6 +87,7 @@
                 android:layout_marginTop="16dp"
                 android:layout_marginEnd="16dp"
                 android:hint="@string/ramen_name_hint"
+                app:hintAnimationEnabled="false"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/ramenImageLayout"
                 app:startIconDrawable="@drawable/ic_label">
@@ -107,6 +108,7 @@
                 android:layout_marginTop="8dp"
                 android:layout_marginEnd="16dp"
                 android:hint="@string/shop_hint"
+                app:hintAnimationEnabled="false"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/ramenName"
                 app:startIconDrawable="@drawable/ic_store">
@@ -127,6 +129,7 @@
                 android:layout_marginTop="8dp"
                 android:layout_marginEnd="16dp"
                 android:hint="@string/location_hint"
+                app:hintAnimationEnabled="false"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/shop"
                 app:startIconDrawable="@drawable/ic_location">
@@ -147,6 +150,7 @@
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="8dp"
                 android:hint="@string/date_hint"
+                app:hintAnimationEnabled="false"
                 app:endIconDrawable="@drawable/ic_arrow_drop_down"
                 app:endIconMode="custom"
                 app:layout_constraintStart_toStartOf="parent"
@@ -169,6 +173,7 @@
                 android:layout_marginEnd="16dp"
                 android:layout_marginBottom="16dp"
                 android:hint="@string/comments_hint"
+                app:hintAnimationEnabled="false"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/date">

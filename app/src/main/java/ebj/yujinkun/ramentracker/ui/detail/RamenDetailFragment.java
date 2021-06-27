@@ -225,6 +225,7 @@ public class RamenDetailFragment extends Fragment {
     private void initShopEditText() {
         EditText editText = binding.shop.getEditText();
         editText.setText(viewModel.getShop());
+        binding.shop.setHintAnimationEnabled(true);
         editText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -246,6 +247,7 @@ public class RamenDetailFragment extends Fragment {
     private void initLocationEditText() {
         EditText editText = binding.location.getEditText();
         editText.setText(viewModel.getLocation());
+        binding.location.setHintAnimationEnabled(true);
         editText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -267,6 +269,7 @@ public class RamenDetailFragment extends Fragment {
     private void initRamenNameEditText() {
         EditText editText = binding.ramenName.getEditText();
         editText.setText(viewModel.getRamenName());
+        binding.ramenName.setHintAnimationEnabled(true);
         editText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -288,6 +291,7 @@ public class RamenDetailFragment extends Fragment {
     private void initCommentsEditText() {
         EditText editText = binding.comments.getEditText();
         editText.setText(viewModel.getComments());
+        binding.comments.setHintAnimationEnabled(true);
         editText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
