@@ -22,8 +22,9 @@ public class Ramen implements Parcelable {
     private final String date;
     private final String comments;
     private final boolean favorite;
+    private final String photoUri;
 
-    public Ramen(@NonNull String id, String name, String shop, String location, String date, String comments, boolean favorite) {
+    public Ramen(@NonNull String id, String name, String shop, String location, String date, String comments, boolean favorite, String photoUri) {
         this.id = id;
         this.name = name;
         this.shop = shop;
@@ -31,6 +32,7 @@ public class Ramen implements Parcelable {
         this.date = date;
         this.comments = comments;
         this.favorite = favorite;
+        this.photoUri = photoUri;
     }
 
     protected Ramen(Parcel in) {
@@ -41,6 +43,7 @@ public class Ramen implements Parcelable {
         date = in.readString();
         comments = in.readString();
         favorite = in.readInt() == 1;
+        photoUri = in.readString();
     }
 
     public static final Creator<Ramen> CREATOR = new Creator<Ramen>() {
@@ -83,6 +86,10 @@ public class Ramen implements Parcelable {
         return favorite;
     }
 
+    public String getPhotoUri() {
+        return photoUri;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -94,14 +101,17 @@ public class Ramen implements Parcelable {
                 Objects.equals(shop, ramen.shop) &&
                 Objects.equals(location, ramen.location) &&
                 Objects.equals(date, ramen.date) &&
-                Objects.equals(comments, ramen.comments);
+                Objects.equals(comments, ramen.comments) &&
+                Objects.equals(photoUri, ramen.photoUri);
+
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, shop, location, date, comments, favorite);
+        return Objects.hash(id, name, shop, location, date, comments, favorite, photoUri);
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "Ramen{" +
@@ -112,6 +122,7 @@ public class Ramen implements Parcelable {
                 ", date='" + date + '\'' +
                 ", comments='" + comments + '\'' +
                 ", favorite=" + favorite +
+                ", photoUri='" + photoUri + '\'' +
                 '}';
     }
 
@@ -128,6 +139,7 @@ public class Ramen implements Parcelable {
         dest.writeString(location);
         dest.writeString(date);
         dest.writeInt(favorite ? 1 : 0);
+        dest.writeString(photoUri);
     }
 
     public static class Builder {
@@ -138,6 +150,7 @@ public class Ramen implements Parcelable {
         private String date;
         private String comments;
         private boolean favorite;
+        private String photoUri;
 
         public Builder setId(String id) {
             this.id = id;
@@ -174,8 +187,13 @@ public class Ramen implements Parcelable {
             return this;
         }
 
+        public Builder setPhotoUri(String photoUri) {
+            this.photoUri = photoUri;
+            return this;
+        }
+
         public Ramen build() {
-            return new Ramen(id, name, shop, location, date, comments, favorite);
+            return new Ramen(id, name, shop, location, date, comments, favorite, photoUri);
         }
     }
 }

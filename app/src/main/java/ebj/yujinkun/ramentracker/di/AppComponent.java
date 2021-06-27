@@ -35,7 +35,7 @@ public class AppComponent {
     public static AppComponent initializeAppComponent(Application application) {
         FileStorage fileStorage = provideFileStorage(application);
         AppDatabase appDatabase = provideAppDatabase(application);
-        RamenRepository ramenRepository = provideRamenRepository(appDatabase, fileStorage);
+        RamenRepository ramenRepository = provideRamenRepository(appDatabase);
         return new AppComponent(ramenRepository, appDatabase, fileStorage);
     }
 
@@ -47,7 +47,7 @@ public class AppComponent {
         return AppDatabase.createDatabase(application);
     }
 
-    private static RamenRepository provideRamenRepository(AppDatabase appDatabase, FileStorage fileStorage) {
-        return new RamenRepositoryImpl(appDatabase, fileStorage);
+    private static RamenRepository provideRamenRepository(AppDatabase appDatabase) {
+        return new RamenRepositoryImpl(appDatabase);
     }
 }

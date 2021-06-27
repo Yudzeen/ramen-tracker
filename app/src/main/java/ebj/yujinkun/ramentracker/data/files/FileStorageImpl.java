@@ -2,10 +2,12 @@ package ebj.yujinkun.ramentracker.data.files;
 
 import android.app.Application;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+
+import java.util.UUID;
 
 import ebj.yujinkun.ramentracker.util.FileUtils;
 import io.reactivex.Single;
-import timber.log.Timber;
 
 public class FileStorageImpl implements FileStorage {
 
@@ -16,11 +18,14 @@ public class FileStorageImpl implements FileStorage {
     }
 
     @Override
-    public Single<String> saveImage(String filename, Bitmap bitmap) {
-        return Single.fromCallable(() -> {
-            Timber.i("Copy photo: %s", bitmap);
-            return FileUtils.saveBitmapToInternalStorage(application, bitmap, filename);
-        });
+    public Single<String> saveBitmap(Bitmap bitmap) {
+        String uuid = UUID.randomUUID().toString();
+        return Single.fromCallable(() -> FileUtils.saveBitmapToInternalStorage(application, bitmap, uuid));
+    }
+
+    @Override
+    public Single<Bitmap> loadBitmap(String bitmapUri) {
+        return Single.fromCallable(() -> BitmapFactory.decodeFile(bitmapUri));
     }
 
 
