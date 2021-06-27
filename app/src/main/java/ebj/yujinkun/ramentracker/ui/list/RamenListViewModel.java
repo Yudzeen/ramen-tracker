@@ -1,6 +1,7 @@
 package ebj.yujinkun.ramentracker.ui.list;
 
 import androidx.annotation.NonNull;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
@@ -26,15 +27,15 @@ public class RamenListViewModel extends BaseViewModel {
         this.ramenRepository = ramenRepository;
     }
 
-    public MutableLiveData<Resource<List<Ramen>>> getRamenListLiveData() {
+    public LiveData<Resource<List<Ramen>>> getRamenListLiveData() {
         return ramenListLiveData;
     }
 
-    public MutableLiveData<Resource<Ramen>> getSaveRamenLiveData() {
+    public LiveData<Resource<Ramen>> getSaveRamenLiveData() {
         return saveRamenLiveData;
     }
 
-    public MutableLiveData<Resource<Ramen>> getDeleteRamenLiveData() {
+    public LiveData<Resource<Ramen>> getDeleteRamenLiveData() {
         return deleteRamenLiveData;
     }
 

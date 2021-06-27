@@ -11,6 +11,7 @@ public class Resource<T> {
     private final Status status;
     private final T data;
     private final Throwable error;
+    private boolean consumed = false;
 
     private Resource(Status status, T data, Throwable error) {
         this.status = status;
@@ -35,19 +36,31 @@ public class Resource<T> {
     }
 
     public void doOnSuccess(Consumer<T> consumer) {
+        if (consumed) {
+            return;
+        }
         if (status == Status.SUCCESS) {
+            consumed = true;
             consumer.accept(data);
         }
     }
 
     public void doOnError(Consumer<Throwable> consumer) {
+        if (consumed) {
+            return;
+        }
         if (status == Status.ERROR) {
+            consumed = true;
             consumer.accept(error);
         }
     }
 
     public void doOnLoading(Runnable runnable) {
+        if (consumed) {
+            return;
+        }
         if (status == Status.LOADING) {
+            consumed = true;
             runnable.run();
         }
     }
