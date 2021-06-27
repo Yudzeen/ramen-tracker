@@ -80,13 +80,12 @@ public class RamenDetailViewModel extends BaseViewModel {
         return loadPhotoLiveData;
     }
 
-    // TODO: delete old image if updated
     public void saveRamen() {
         Ramen.Builder ramenBuilder = ramenDetailDataHolder.toRamenBuilder();
         Bitmap bitmap = ramenDetailDataHolder.getBitmap();
         if (bitmap != null) {
             saveRamenLiveData.setValue(Resource.loading());
-            bind(fileStorage.saveBitmap(bitmap)
+            bind(fileStorage.saveBitmap(ramenDetailDataHolder.getId(), bitmap)
                     .map(ramenBuilder::setPhotoUri)
                     .flatMap(builder -> {
                         Ramen ramen = ramenBuilder.build();

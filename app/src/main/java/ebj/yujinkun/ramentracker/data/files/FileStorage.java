@@ -11,7 +11,7 @@ public interface FileStorage {
      * @param bitmap bitmap to save
      * @return String URI of saved location
      */
-    Single<String> saveBitmap(Bitmap bitmap);
+    Single<String> saveBitmap(String id, Bitmap bitmap);
 
     /**
      * Loads bitmap of given URI
