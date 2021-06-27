@@ -11,16 +11,51 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
+        <FrameLayout
+            android:id="@+id/ramenImageLayout"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintDimensionRatio="H,16:9"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:id="@+id/ramenImage"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:contentDescription="@string/ramen_image"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_ramen"
+                android:background="@android:color/darker_gray"
+                app:layout_constraintDimensionRatio="H,16:9"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageView
+                android:id="@+id/ramenImagePlaceholder"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="32dp"
+                android:contentDescription="@string/image"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_ramen"
+                android:background="@android:color/darker_gray"
+                app:tint="@android:color/white" />
+
+        </FrameLayout>
+
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
-            android:layout_marginStart="8dp"
             android:orientation="vertical"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintTop_toBottomOf="@+id/ramenImageLayout">
 
             <TextView
                 android:id="@+id/ramenName"
@@ -51,6 +86,7 @@
             android:layout_marginEnd="12dp"
             android:contentDescription="@string/favorite"
             android:src="@drawable/ic_favorite"
+            app:tint="#B31900"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 

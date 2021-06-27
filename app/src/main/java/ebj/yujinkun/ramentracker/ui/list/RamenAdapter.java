@@ -1,5 +1,8 @@
 package ebj.yujinkun.ramentracker.ui.list;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -81,6 +84,17 @@ public class RamenAdapter extends RecyclerView.Adapter<RamenAdapter.ViewHolder> 
             binding.date.setText(DateUtils.formatDate(ramen.getDate(),
                     DateUtils.DATE_FORMAT_DEFAULT, DateUtils.DATE_FORMAT_DATE_PRETTY));
             binding.favorite.setVisibility(ramen.isFavorite() ? View.VISIBLE : View.GONE);
+
+            if (!TextUtils.isEmpty(ramen.getPhotoUri())) {
+                updateRamenPhoto(BitmapFactory.decodeFile(ramen.getPhotoUri()));
+            }
+
+        }
+
+        private void updateRamenPhoto(Bitmap bitmap) {
+            binding.ramenImagePlaceholder.setVisibility(View.GONE);
+            binding.ramenImage.setImageBitmap(bitmap);
+            binding.ramenImage.setVisibility(View.VISIBLE);
         }
     }
 
