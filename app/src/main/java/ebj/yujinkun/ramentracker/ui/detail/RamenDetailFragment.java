@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -55,6 +56,8 @@ public class RamenDetailFragment extends Fragment {
 
     private FragmentRamenDetailBinding binding;
     private RamenDetailViewModel viewModel;
+
+    private ProgressDialog dialog;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -375,15 +378,18 @@ public class RamenDetailFragment extends Fragment {
 
     private void handleSaveLoading() {
         Timber.i("Saving...");
+        showProgressDialog("Saving...", false);
     }
 
     private void handleSaveSuccess(Ramen ramen) {
         Timber.i("Save success: %s", ramen);
+        hideProgressDialog();
         NavHostFragment.findNavController(this).navigateUp();
     }
 
     private void handleSaveError(Throwable error) {
         Timber.e(error, "Save error");
+        hideProgressDialog();
         Toast.makeText(requireContext(), "Save error", Toast.LENGTH_SHORT).show();
     }
 
@@ -457,6 +463,19 @@ public class RamenDetailFragment extends Fragment {
 
     private void hideSaveChangesButton() {
         binding.fab.setVisibility(View.GONE);
+    }
+
+    private void showProgressDialog(String message, boolean cancelable) {
+        if (dialog == null) {
+            dialog = new ProgressDialog(requireActivity());
+        }
+        dialog.setCancelable(cancelable);
+        dialog.setMessage(message);
+        dialog.show();
+    }
+
+    private void hideProgressDialog() {
+        dialog.dismiss();
     }
 
     private void navigateUp() {

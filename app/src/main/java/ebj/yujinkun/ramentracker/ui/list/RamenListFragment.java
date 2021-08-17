@@ -114,15 +114,18 @@ public class RamenListFragment extends Fragment {
 
     private void handleRamenListLoading() {
         Timber.i("Loading ramen list");
+        showLoadingView();
     }
 
     private void handleLoadRamenListSuccess(List<Ramen> ramenList) {
         Timber.i("Load ramen list success: %s", ramenList);
+        hideLoadingView();
         ramenAdapter.submitList(ramenList);
     }
 
     private void handleLoadRamenListError(Throwable error) {
         Timber.e(error, "Load ramen list error");
+        hideLoadingView();
         Toast.makeText(requireContext(), "An error occurred.", Toast.LENGTH_SHORT).show();
     }
 
@@ -153,6 +156,14 @@ public class RamenListFragment extends Fragment {
     private void handleSaveRamenError(Throwable error) {
         Timber.e(error, "Save ramen error");
         Toast.makeText(requireContext(), "Save error", Toast.LENGTH_SHORT).show();
+    }
+
+    private void showLoadingView() {
+        binding.progressBarContainer.getRoot().setVisibility(View.VISIBLE);
+    }
+
+    private void hideLoadingView() {
+        binding.progressBarContainer.getRoot().setVisibility(View.GONE);
     }
 
     private void navigateToRamenDetailScreen(@Nullable Ramen ramen) {
