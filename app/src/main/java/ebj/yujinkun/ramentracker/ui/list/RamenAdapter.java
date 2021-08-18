@@ -11,6 +11,8 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -86,14 +88,16 @@ public class RamenAdapter extends RecyclerView.Adapter<RamenAdapter.ViewHolder> 
             binding.favorite.setVisibility(ramen.isFavorite() ? View.VISIBLE : View.GONE);
 
             if (!TextUtils.isEmpty(ramen.getPhotoUri())) {
-                updateRamenPhoto(BitmapFactory.decodeFile(ramen.getPhotoUri()));
+                updateRamenPhoto(itemView, ramen.getPhotoUri());
             }
 
         }
 
-        private void updateRamenPhoto(Bitmap bitmap) {
+        private void updateRamenPhoto(View itemView, String uri) {
             binding.ramenImagePlaceholder.setVisibility(View.GONE);
-            binding.ramenImage.setImageBitmap(bitmap);
+            Glide.with(itemView)
+                    .load(uri)
+                    .into(binding.ramenImage);
             binding.ramenImage.setVisibility(View.VISIBLE);
         }
     }

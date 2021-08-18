@@ -8,11 +8,13 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.InputType;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -32,6 +34,12 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
+
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 
 import java.io.IOException;
 import java.util.Calendar;
@@ -85,12 +93,6 @@ public class RamenDetailFragment extends Fragment {
                 .get(RamenDetailViewModel.class);
         parseArguments(getArguments());
         initViews();
-
-        viewModel.getLoadPhotoLiveData().observe(getViewLifecycleOwner(), resource -> {
-            resource.doOnLoading(this::handlePhotoLoading);
-            resource.doOnSuccess(this::handlePhotoSuccess);
-            resource.doOnError(this::handlePhotoError);
-        });
 
         viewModel.getSaveRamenLiveData().observe(getViewLifecycleOwner(), resource -> {
             resource.doOnLoading(this::handleSaveLoading);
@@ -220,8 +222,7 @@ public class RamenDetailFragment extends Fragment {
         initRamenNameEditText();
         initCommentsEditText();
         initDateField();
-        binding.ramenImagePlaceholder.setOnClickListener(view -> showUpdatePhotoDialog());
-        binding.ramenImage.setOnClickListener(view -> showUpdatePhotoDialog());
+        initRamenImage();
         binding.fab.setOnClickListener(view -> viewModel.saveRamen());
     }
 
@@ -349,19 +350,6 @@ public class RamenDetailFragment extends Fragment {
         viewModel.deleteRamen();
     }
 
-    private void handlePhotoLoading() {
-        Timber.i("Loading photo");
-    }
-
-    private void handlePhotoError(Throwable error) {
-        Timber.e(error, "Load photo error");
-    }
-
-    private void handlePhotoSuccess(Bitmap bitmap) {
-        Timber.i("Load photo success");
-        updateRamenPhoto(bitmap);
-    }
-
     private void handleDeleteLoading() {
         Timber.i("Deleting");
     }
@@ -446,6 +434,33 @@ public class RamenDetailFragment extends Fragment {
             startActivityForResult(Intent.createChooser(intent, "Select Image"), SELECT_IMAGE_REQUEST_CODE);
         }  else {
             requestPermissions(new String[] {Manifest.permission.READ_EXTERNAL_STORAGE}, STORAGE_PERMISSION_REQUEST_CODE);
+        }
+    }
+
+    private void initRamenImage() {
+        binding.ramenImagePlaceholder.setOnClickListener(view -> showUpdatePhotoDialog());
+        binding.ramenImage.setOnClickListener(view -> showUpdatePhotoDialog());
+
+        String photoUri = viewModel.getPhotoUri();
+        if (!TextUtils.isEmpty(photoUri)) {
+            Glide.with(requireActivity())
+                    .load(photoUri)
+                    .listener(new RequestListener<Drawable>() {
+                        @Override
+                        public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                            Timber.e(e, "Error loading image");
+                            return false;
+                        }
+
+                        @Override
+                        public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                            binding.ramenImagePlaceholder.setVisibility(View.GONE);
+                            binding.addPhotoIcon.setVisibility(View.GONE);
+                            binding.ramenImage.setVisibility(View.VISIBLE);
+                            return false;
+                        }
+                    })
+                    .into(binding.ramenImage);
         }
     }
 

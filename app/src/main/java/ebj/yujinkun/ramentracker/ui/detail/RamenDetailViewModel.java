@@ -19,7 +19,6 @@ import ebj.yujinkun.ramentracker.util.DateUtils;
 import ebj.yujinkun.ramentracker.util.Resource;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
-import timber.log.Timber;
 
 public class RamenDetailViewModel extends BaseViewModel {
 
@@ -28,7 +27,6 @@ public class RamenDetailViewModel extends BaseViewModel {
 
     private final RamenDetailDataHolder ramenDetailDataHolder = new RamenDetailDataHolder();
 
-    private final MutableLiveData<Resource<Bitmap>> loadPhotoLiveData = new MutableLiveData<>();
     private final MutableLiveData<Resource<Ramen>> saveRamenLiveData = new MutableLiveData<>();
     private final MutableLiveData<Resource<Ramen>> deleteRamenLiveData = new MutableLiveData<>();
 
@@ -52,7 +50,6 @@ public class RamenDetailViewModel extends BaseViewModel {
                     .setComments(ramen.getComments())
                     .setFavorite(ramen.isFavorite())
                     .setPhotoUri(ramen.getPhotoUri());
-            loadPhotoForRamen(ramen);
         } else {
             ramenDetailDataHolder
                     .setInitialRamen(null)
@@ -65,19 +62,6 @@ public class RamenDetailViewModel extends BaseViewModel {
                     .setFavorite(false)
                     .setPhotoUri("");
         }
-    }
-
-    private void loadPhotoForRamen(Ramen ramen) {
-        bind(fileStorage.loadBitmap(ramen.getPhotoUri())
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .doOnSubscribe(disposable -> loadPhotoLiveData.setValue(Resource.loading()))
-                .subscribe(bitmap -> loadPhotoLiveData.setValue(Resource.success(bitmap)),
-                        throwable -> Timber.e(throwable, "Error loading photo for %s", ramen)));
-    }
-
-    public LiveData<Resource<Bitmap>> getLoadPhotoLiveData() {
-        return loadPhotoLiveData;
     }
 
     public void saveRamen() {
@@ -182,6 +166,8 @@ public class RamenDetailViewModel extends BaseViewModel {
     public void setDate(String date) {
         ramenDetailDataHolder.setDate(date);
     }
+
+    public String getPhotoUri() { return ramenDetailDataHolder.getPhotoUri(); }
 
     public void updateSelectedPhoto(Bitmap bitmap) {
         ramenDetailDataHolder.setBitmap(bitmap);
