@@ -1,195 +1,149 @@
-package ebj.yujinkun.ramentracker.ui.detail;
+package ebj.yujinkun.ramentracker.ui.detail
 
-import android.graphics.Bitmap;
+import android.graphics.Bitmap
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.LiveDataReactiveStreams
+import androidx.lifecycle.MutableLiveData
+import dagger.hilt.android.lifecycle.HiltViewModel
+import ebj.yujinkun.ramentracker.data.RamenRepository
+import ebj.yujinkun.ramentracker.data.files.FileStorage
+import ebj.yujinkun.ramentracker.data.models.Ramen
+import ebj.yujinkun.ramentracker.ui.common.BaseViewModel
+import ebj.yujinkun.ramentracker.util.DateUtils
+import ebj.yujinkun.ramentracker.util.Resource
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.Disposable
+import io.reactivex.schedulers.Schedulers
+import java.util.*
+import javax.inject.Inject
 
-import androidx.annotation.NonNull;
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.LiveDataReactiveStreams;
-import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModel;
-import androidx.lifecycle.ViewModelProvider;
+@HiltViewModel
+class RamenDetailViewModel
+    @Inject internal constructor(
+    private val ramenRepository: RamenRepository,
+    private val fileStorage: FileStorage
+) : BaseViewModel() {
+    private val ramenDetailDataHolder = RamenDetailDataHolder()
+    private val saveRamenLiveData = MutableLiveData<Resource<Ramen>>()
+    private val deleteRamenLiveData = MutableLiveData<Resource<Ramen>>()
+    val dataUpdatedLiveData =
+        LiveDataReactiveStreams.fromPublisher(ramenDetailDataHolder.dataUpdatedObservable)
 
-import java.util.UUID;
-
-import ebj.yujinkun.ramentracker.data.RamenRepository;
-import ebj.yujinkun.ramentracker.data.files.FileStorage;
-import ebj.yujinkun.ramentracker.data.models.Ramen;
-import ebj.yujinkun.ramentracker.ui.common.BaseViewModel;
-import ebj.yujinkun.ramentracker.util.DateUtils;
-import ebj.yujinkun.ramentracker.util.Resource;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.schedulers.Schedulers;
-
-public class RamenDetailViewModel extends BaseViewModel {
-
-    private final RamenRepository ramenRepository;
-    private final FileStorage fileStorage;
-
-    private final RamenDetailDataHolder ramenDetailDataHolder = new RamenDetailDataHolder();
-
-    private final MutableLiveData<Resource<Ramen>> saveRamenLiveData = new MutableLiveData<>();
-    private final MutableLiveData<Resource<Ramen>> deleteRamenLiveData = new MutableLiveData<>();
-
-    private final LiveData<Boolean> dataUpdatedLiveData =
-            LiveDataReactiveStreams.fromPublisher(ramenDetailDataHolder.getDataUpdatedObservable());
-
-    public RamenDetailViewModel(RamenRepository ramenRepository, FileStorage fileStorage) {
-        this.ramenRepository = ramenRepository;
-        this.fileStorage = fileStorage;
-    }
-
-    public void initValues(Ramen ramen) {
+    fun initValues(ramen: Ramen?) {
         if (ramen != null) {
             ramenDetailDataHolder
-                    .setInitialRamen(ramen)
-                    .setId(ramen.getId())
-                    .setName(ramen.getName())
-                    .setShop(ramen.getShop())
-                    .setLocation(ramen.getLocation())
-                    .setDate(ramen.getDate())
-                    .setComments(ramen.getComments())
-                    .setFavorite(ramen.isFavorite())
-                    .setPhotoUri(ramen.getPhotoUri());
+                .setInitialRamen(ramen)
+                .setId(ramen.id)
+                .setName(ramen.name ?: "")
+                .setShop(ramen.shop ?: "")
+                .setLocation(ramen.location ?: "")
+                .setDate(ramen.date ?: "")
+                .setComments(ramen.comments ?: "")
+                .setFavorite(ramen.favorite)
+                .setPhotoUri(ramen.photoUri ?: "")
         } else {
             ramenDetailDataHolder
-                    .setInitialRamen(null)
-                    .setId(UUID.randomUUID().toString())
-                    .setName("")
-                    .setShop("")
-                    .setLocation("")
-                    .setDate(DateUtils.getCurrentDate())
-                    .setComments("")
-                    .setFavorite(false)
-                    .setPhotoUri("");
+                .setInitialRamen(null)
+                .setId(UUID.randomUUID().toString())
+                .setName("")
+                .setShop("")
+                .setLocation("")
+                .setDate(DateUtils.currentDate)
+                .setComments("")
+                .setFavorite(false)
+                .setPhotoUri("")
         }
     }
 
-    public void saveRamen() {
-        Ramen.Builder ramenBuilder = ramenDetailDataHolder.toRamenBuilder();
-        Bitmap bitmap = ramenDetailDataHolder.getBitmap();
+    fun saveRamen() {
+        val bitmap = ramenDetailDataHolder.getBitmap()
         if (bitmap != null) {
-            saveRamenLiveData.setValue(Resource.loading());
-            bind(fileStorage.saveBitmap(ramenDetailDataHolder.getId(), bitmap)
-                    .map(ramenBuilder::setPhotoUri)
-                    .flatMap(builder -> {
-                        Ramen ramen = ramenBuilder.build();
-                        return ramenRepository.save(ramen).toSingleDefault(ramen);
-                    })
+            saveRamenLiveData.setValue(Resource.Loading())
+            bind(
+                fileStorage.saveBitmap(ramenDetailDataHolder.id, bitmap)
+                    .map { photoUri -> ramenDetailDataHolder.setPhotoUri(photoUri)}
+                    .flatMap {
+                        val ramen = ramenDetailDataHolder.build()
+                        ramenRepository.saveRamen(ramen).toSingleDefault(ramen)
+                    }
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(this::onSaveSuccess,
-                            throwable -> saveRamenLiveData.setValue(Resource.error(throwable))));
+                    .subscribe(
+                        { ramen -> onSaveSuccess(ramen) }
+                    ) { throwable: Throwable -> saveRamenLiveData.setValue(Resource.Error(throwable)) })
         } else {
-            Ramen ramen = ramenBuilder.build();
-            bind(ramenRepository.save(ramen)
+            val ramen = ramenDetailDataHolder.build()
+            bind(
+                ramenRepository.saveRamen(ramen)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
-                    .doOnSubscribe(disposable -> saveRamenLiveData.setValue(Resource.loading()))
-                    .subscribe(() -> onSaveSuccess(ramen),
-                            throwable -> saveRamenLiveData.setValue(Resource.error(throwable))));
+                    .doOnSubscribe { saveRamenLiveData.setValue(Resource.Loading()) }
+                    .subscribe(
+                        { onSaveSuccess(ramen) }
+                    ) { throwable: Throwable -> saveRamenLiveData.setValue(Resource.Error(throwable)) })
         }
     }
 
-    private void onSaveSuccess(Ramen ramen) {
-        saveRamenLiveData.setValue(Resource.success(ramen));
+    private fun onSaveSuccess(ramen: Ramen) {
+        saveRamenLiveData.value = Resource.Success(ramen)
     }
 
-    public LiveData<Resource<Ramen>> getSaveRamenLiveData() {
-        return saveRamenLiveData;
+    fun getSaveRamenLiveData(): LiveData<Resource<Ramen>> {
+        return saveRamenLiveData
     }
 
-    public void deleteRamen() {
-        bind(ramenRepository.delete(ramenDetailDataHolder.getInitialRamen())
+    fun deleteRamen() {
+        bind(
+            ramenRepository.deleteRamen(ramenDetailDataHolder.initialRamen!!)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .doOnSubscribe(disposable -> deleteRamenLiveData.setValue(Resource.loading()))
-                .subscribe(() -> deleteRamenLiveData.setValue(Resource.success(ramenDetailDataHolder.getInitialRamen())),
-                        throwable -> deleteRamenLiveData.setValue(Resource.error(throwable))));
+                .doOnSubscribe { disposable: Disposable? -> deleteRamenLiveData.setValue(Resource.Loading()) }
+                .subscribe(
+                    { deleteRamenLiveData.setValue(Resource.Success(ramenDetailDataHolder.initialRamen!!)) }
+                ) { throwable: Throwable -> deleteRamenLiveData.setValue(Resource.Error(throwable)) })
     }
 
-    public LiveData<Resource<Ramen>> getDeleteRamenLiveData() {
-        return deleteRamenLiveData;
+    fun getDeleteRamenLiveData(): LiveData<Resource<Ramen>> {
+        return deleteRamenLiveData
     }
 
-    public LiveData<Boolean> getDataUpdatedLiveData() {
-        return dataUpdatedLiveData;
-    }
-
-    public boolean isFavorite() {
-        return ramenDetailDataHolder.isFavorite();
-    }
-
-    public void setFavorite(boolean favorite) {
-        ramenDetailDataHolder.setFavorite(favorite);
-    }
-
-    public boolean isDeletable() {
-        return ramenDetailDataHolder.getInitialRamen() != null;
-    }
-
-    public String getShop() {
-        return ramenDetailDataHolder.getShop();
-    }
-
-    public void setShop(String shop) {
-        ramenDetailDataHolder.setShop(shop);
-    }
-
-    public String getLocation() {
-        return ramenDetailDataHolder.getLocation();
-    }
-
-    public void setLocation(String location) {
-        ramenDetailDataHolder.setLocation(location);
-    }
-
-    public String getRamenName() {
-        return ramenDetailDataHolder.getName();
-    }
-
-    public void setRamenName(String ramenName) {
-        ramenDetailDataHolder.setName(ramenName);
-    }
-
-    public String getComments() {
-        return ramenDetailDataHolder.getComments();
-    }
-
-    public void setComments(String comments) {
-        ramenDetailDataHolder.setComments(comments);
-    }
-
-    public String getDate() {
-        return ramenDetailDataHolder.getDate();
-    }
-
-    public void setDate(String date) {
-        ramenDetailDataHolder.setDate(date);
-    }
-
-    public String getPhotoUri() { return ramenDetailDataHolder.getPhotoUri(); }
-
-    public void updateSelectedPhoto(Bitmap bitmap) {
-        ramenDetailDataHolder.setBitmap(bitmap);
-        ramenDetailDataHolder.setPhotoUri("");  // set to empty to mark as data changed
-    }
-
-    public static class Factory implements ViewModelProvider.Factory {
-
-        private final RamenRepository ramenRepository;
-        private final FileStorage fileStorage;
-
-        public Factory(RamenRepository ramenRepository, FileStorage fileStorage) {
-            this.ramenRepository = ramenRepository;
-            this.fileStorage = fileStorage;
+    var isFavorite: Boolean
+        get() = ramenDetailDataHolder.isFavorite
+        set(favorite) {
+            ramenDetailDataHolder.setFavorite(favorite)
         }
-
-        @NonNull
-        @Override
-        public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
-            //noinspection unchecked
-            return (T) new RamenDetailViewModel(ramenRepository, fileStorage);
+    val isDeletable: Boolean
+        get() = ramenDetailDataHolder.initialRamen != null
+    var shop: String?
+        get() = ramenDetailDataHolder.shop
+        set(shop) {
+            ramenDetailDataHolder.setShop(shop!!)
         }
-    }
+    var location: String?
+        get() = ramenDetailDataHolder.location
+        set(location) {
+            ramenDetailDataHolder.setLocation(location!!)
+        }
+    var ramenName: String?
+        get() = ramenDetailDataHolder.name
+        set(ramenName) {
+            ramenDetailDataHolder.setName(ramenName!!)
+        }
+    var comments: String?
+        get() = ramenDetailDataHolder.comments
+        set(comments) {
+            ramenDetailDataHolder.setComments(comments!!)
+        }
+    var date: String?
+        get() = ramenDetailDataHolder.date
+        set(date) {
+            ramenDetailDataHolder.setDate(date!!)
+        }
+    val photoUri: String
+        get() = ramenDetailDataHolder.photoUri
 
+    fun updateSelectedPhoto(bitmap: Bitmap?) {
+        ramenDetailDataHolder.setBitmap(bitmap)
+        ramenDetailDataHolder.setPhotoUri("") // set to empty to mark as data changed
+    }
 }

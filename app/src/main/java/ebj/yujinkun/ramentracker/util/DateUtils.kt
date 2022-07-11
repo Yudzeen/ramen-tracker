@@ -1,64 +1,49 @@
-package ebj.yujinkun.ramentracker.util;
+package ebj.yujinkun.ramentracker.util
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Locale;
-import java.util.Objects;
+import kotlin.jvm.JvmOverloads
+import timber.log.Timber
+import java.text.ParseException
+import java.text.SimpleDateFormat
+import java.util.*
 
-import timber.log.Timber;
-
-public class DateUtils {
-
-    public static final String DATE_FORMAT_DEFAULT = "yyyy-MM-dd'T'HH:mm:ss'Z'";
-    public static final String DATE_FORMAT_DATE_ONLY = "yyyy-MM-dd";
-    public static final String DATE_FORMAT_DATE_PRETTY = "MMMM d, yyyy";
-    public static final String DATE_FORMAT_DATE_AND_TIME_PRETTY = "MMMM d, yyyy  h:mm a";
-
-    public static String formatDate(int year, int month, int day) {
-        return formatDate(year, month, day, DATE_FORMAT_DEFAULT);
+object DateUtils {
+    const val DATE_FORMAT_DEFAULT = "yyyy-MM-dd'T'HH:mm:ss'Z'"
+    const val DATE_FORMAT_DATE_ONLY = "yyyy-MM-dd"
+    const val DATE_FORMAT_DATE_PRETTY = "MMMM d, yyyy"
+    const val DATE_FORMAT_DATE_AND_TIME_PRETTY = "MMMM d, yyyy  h:mm a"
+    @JvmOverloads
+    fun formatDate(year: Int, month: Int, day: Int, format: String? = DATE_FORMAT_DEFAULT): String {
+        val calendar = Calendar.getInstance()
+        calendar[year, month] = day
+        return formatDate(calendar.timeInMillis, format)
     }
 
-    public static String formatDate(int year, int month, int day, String format) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(year, month, day);
-        return formatDate(calendar.getTimeInMillis(), format);
+    @JvmOverloads
+    fun formatDate(dateInMillis: Long, dateFormat: String? = DATE_FORMAT_DEFAULT): String {
+        val date = Date(dateInMillis)
+        val sdf = SimpleDateFormat(dateFormat, Locale.US)
+        return sdf.format(date)
     }
 
-    public static String formatDate(long dateInMillis) {
-        return formatDate(dateInMillis, DATE_FORMAT_DEFAULT);
+    fun formatDate(date: String?, currentFormat: String?, newFormat: String?): String {
+        return formatDate(getDate(date, currentFormat), newFormat)
     }
 
-    public static String formatDate(long dateInMillis, String dateFormat) {
-        Date date = new Date(dateInMillis);
-        SimpleDateFormat sdf = new SimpleDateFormat(dateFormat, Locale.US);
-        return sdf.format(date);
-    }
-
-    public static String formatDate(String date, String currentFormat, String newFormat) {
-        return formatDate(DateUtils.getDate(date, currentFormat), newFormat);
-    }
-
-    public static long getDate(String date, String dateFormat) {
+    fun getDate(date: String?, dateFormat: String?): Long {
         try {
-            return Objects.requireNonNull(new SimpleDateFormat(dateFormat, Locale.US).parse(date)).getTime();
-        } catch (ParseException e) {
-            Timber.e(e, "Unable to parse: %s", date);
+            return Objects.requireNonNull(SimpleDateFormat(dateFormat, Locale.US).parse(date)).time
+        } catch (e: ParseException) {
+            Timber.e(e, "Unable to parse: %s", date)
         }
-        return -1;
+        return -1
     }
 
-    public static long getDate(String date) {
-        return getDate(date, DATE_FORMAT_DEFAULT);
+    fun getDate(date: String?): Long {
+        return getDate(date, DATE_FORMAT_DEFAULT)
     }
 
-    public static String getCurrentDate() {
-        return formatDate(getCurrentTimeInMillis());
-    }
-
-    public static long getCurrentTimeInMillis() {
-        return new Date().getTime();
-    }
-
+    val currentDate: String
+        get() = formatDate(currentTimeInMillis)
+    val currentTimeInMillis: Long
+        get() = Date().time
 }

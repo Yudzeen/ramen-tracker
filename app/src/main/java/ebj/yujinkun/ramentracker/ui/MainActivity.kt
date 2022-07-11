@@ -1,17 +1,14 @@
-package ebj.yujinkun.ramentracker.ui;
+package ebj.yujinkun.ramentracker.ui
 
-import android.os.Bundle;
+import ebj.yujinkun.ramentracker.R
+import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
+import dagger.hilt.android.AndroidEntryPoint
 
-import androidx.appcompat.app.AppCompatActivity;
-
-import ebj.yujinkun.ramentracker.R;
-
-public class MainActivity extends AppCompatActivity {
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+@AndroidEntryPoint
+class MainActivity : AppCompatActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
     }
-
 }

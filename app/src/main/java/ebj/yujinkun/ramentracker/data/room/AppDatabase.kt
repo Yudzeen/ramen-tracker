@@ -1,22 +1,30 @@
-package ebj.yujinkun.ramentracker.data.room;
+package ebj.yujinkun.ramentracker.data.room
 
-import android.app.Application;
+import android.content.Context
+import androidx.room.Database
+import androidx.room.Room
+import androidx.room.RoomDatabase
+import dagger.hilt.android.qualifiers.ApplicationContext
 
-import androidx.room.Database;
-import androidx.room.Room;
-import androidx.room.RoomDatabase;
+@Database(entities = [RamenEntity::class], version = 1)
+abstract class AppDatabase : RoomDatabase() {
 
-import ebj.yujinkun.ramentracker.data.models.Ramen;
+    abstract fun ramenDao(): RamenDao
 
-@Database(entities = {Ramen.class}, version = 1)
-public abstract class AppDatabase extends RoomDatabase {
+    companion object {
+        private const val DB_NAME = "app-db"
 
-    public static final String DB_NAME = "app-db";
+        @Volatile private var instance: AppDatabase? = null
 
-    public abstract RamenDao ramenDao();
+        fun getInstance(@ApplicationContext context: Context): AppDatabase {
+            return instance ?: synchronized(this) {
+                instance ?: buildDatabase(context).also { instance = it }
+            }
+        }
 
-    public static AppDatabase createDatabase(Application application) {
-        return Room.databaseBuilder(application, AppDatabase.class, DB_NAME).build();
+        private fun buildDatabase(@ApplicationContext context: Context): AppDatabase {
+            return Room.databaseBuilder(context, AppDatabase::class.java, DB_NAME)
+                .build()
+        }
     }
-
 }

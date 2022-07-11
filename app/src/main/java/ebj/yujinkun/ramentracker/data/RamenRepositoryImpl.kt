@@ -1,34 +1,30 @@
-package ebj.yujinkun.ramentracker.data;
+package ebj.yujinkun.ramentracker.data
 
-import java.util.List;
+import ebj.yujinkun.ramentracker.data.room.AppDatabase
+import ebj.yujinkun.ramentracker.data.RamenRepository
+import ebj.yujinkun.ramentracker.data.room.RamenDao
+import io.reactivex.Flowable
+import ebj.yujinkun.ramentracker.data.models.Ramen
+import io.reactivex.Completable
 
-import ebj.yujinkun.ramentracker.data.models.Ramen;
-import ebj.yujinkun.ramentracker.data.room.AppDatabase;
-import ebj.yujinkun.ramentracker.data.room.RamenDao;
-import io.reactivex.Completable;
-import io.reactivex.Flowable;
+class RamenRepositoryImpl(appDatabase: AppDatabase) : RamenRepository {
 
-public class RamenRepositoryImpl implements RamenRepository {
+    private val ramenDao: RamenDao = appDatabase.ramenDao()
 
-    private final RamenDao ramenDao;
-
-    public RamenRepositoryImpl(AppDatabase appDatabase) {
-        this.ramenDao = appDatabase.ramenDao();
+    override fun getAllRamen(): Flowable<List<Ramen>> {
+        return ramenDao.getAllRamen().map { ramenList ->
+            ramenList.map { ramenEntity ->
+                ramenEntity.toModel()
+            }
+        }
     }
 
-    @Override
-    public Flowable<List<Ramen>> getAllRamen() {
-        return ramenDao.getAllRamen();
+    override fun saveRamen(ramen: Ramen): Completable {
+        return ramenDao.save(ramen.toEntity())
     }
 
-    @Override
-    public Completable save(Ramen ramen) {
-        return ramenDao.save(ramen);
-    }
-
-    @Override
-    public Completable delete(Ramen ramen) {
-        return ramenDao.delete(ramen);
+    override fun deleteRamen(ramen: Ramen): Completable {
+        return ramenDao.delete(ramen.toEntity())
     }
 
 }

@@ -1,86 +1,75 @@
-package ebj.yujinkun.ramentracker.ui.list;
+package ebj.yujinkun.ramentracker.ui.list
 
-import androidx.annotation.NonNull;
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModel;
-import androidx.lifecycle.ViewModelProvider;
+import ebj.yujinkun.ramentracker.data.RamenRepository
+import ebj.yujinkun.ramentracker.ui.common.BaseViewModel
+import androidx.lifecycle.MutableLiveData
+import ebj.yujinkun.ramentracker.data.room.RamenEntity
+import androidx.lifecycle.LiveData
+import io.reactivex.schedulers.Schedulers
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.Disposable
+import androidx.lifecycle.ViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
+import ebj.yujinkun.ramentracker.data.models.Ramen
+import ebj.yujinkun.ramentracker.util.Resource
+import javax.inject.Inject
 
-import java.util.List;
-
-import ebj.yujinkun.ramentracker.data.RamenRepository;
-import ebj.yujinkun.ramentracker.data.models.Ramen;
-import ebj.yujinkun.ramentracker.ui.common.BaseViewModel;
-import ebj.yujinkun.ramentracker.util.Resource;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.schedulers.Schedulers;
-
-public class RamenListViewModel extends BaseViewModel {
-
-    private final RamenRepository ramenRepository;
-
-    private final MutableLiveData<Resource<List<Ramen>>> ramenListLiveData = new MutableLiveData<>();
-    private final MutableLiveData<Resource<Ramen>> saveRamenLiveData = new MutableLiveData<>();
-    private final MutableLiveData<Resource<Ramen>> deleteRamenLiveData = new MutableLiveData<>();
-
-    public RamenListViewModel(RamenRepository ramenRepository) {
-        this.ramenRepository = ramenRepository;
+@HiltViewModel
+class RamenListViewModel
+    @Inject internal constructor(private val ramenRepository: RamenRepository) : BaseViewModel() {
+    private val ramenListLiveData = MutableLiveData<Resource<List<Ramen>>>()
+    private val saveRamenLiveData = MutableLiveData<Resource<Ramen>>()
+    private val deleteRamenLiveData = MutableLiveData<Resource<Ramen>>()
+    fun getRamenListLiveData(): LiveData<Resource<List<Ramen>>> {
+        return ramenListLiveData
     }
 
-    public LiveData<Resource<List<Ramen>>> getRamenListLiveData() {
-        return ramenListLiveData;
+    fun getSaveRamenLiveData(): LiveData<Resource<Ramen>> {
+        return saveRamenLiveData
     }
 
-    public LiveData<Resource<Ramen>> getSaveRamenLiveData() {
-        return saveRamenLiveData;
+    fun getDeleteRamenLiveData(): LiveData<Resource<Ramen>> {
+        return deleteRamenLiveData
     }
 
-    public LiveData<Resource<Ramen>> getDeleteRamenLiveData() {
-        return deleteRamenLiveData;
-    }
-
-    public void loadAllRamen() {
-        bind(ramenRepository.getAllRamen()
+    fun loadAllRamen() {
+        bind(
+            ramenRepository.getAllRamen()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .map(Resource::success)
-                .onErrorReturn(Resource::error)
-                .startWith(Resource.loading())
-                .subscribe(ramenListLiveData::setValue));
+                .doOnNext{ ramenListLiveData.value = Resource.Success(it) }
+                .doOnError { ramenListLiveData.value = Resource.Error(it) }
+                .doOnSubscribe { ramenListLiveData.value = Resource.Loading() }
+                .subscribe())
     }
 
-    public void save(Ramen ramen) {
-        bind(ramenRepository.save(ramen)
+    fun save(ramen: Ramen) {
+        bind(
+            ramenRepository.saveRamen(ramen)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .doOnSubscribe(disposable -> saveRamenLiveData.setValue(Resource.loading()))
-                .subscribe(() -> saveRamenLiveData.setValue(Resource.success(ramen)),
-                        throwable -> saveRamenLiveData.setValue(Resource.error(throwable))));
+                .doOnSubscribe { saveRamenLiveData.value = Resource.Loading() }
+                .subscribe(
+                    {
+                        saveRamenLiveData.setValue(Resource.Success(ramen))
+                    }
+                ) { throwable: Throwable ->
+                    saveRamenLiveData.setValue(Resource.Error(throwable))
+                })
     }
 
-    public void delete(Ramen ramen) {
-        bind(ramenRepository.delete(ramen)
+    fun delete(ramen: Ramen) {
+        bind(
+            ramenRepository.deleteRamen(ramen)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .doOnSubscribe(disposable -> deleteRamenLiveData.setValue(Resource.loading()))
-                .subscribe(() -> deleteRamenLiveData.setValue(Resource.success(ramen)),
-                        throwable -> deleteRamenLiveData.setValue(Resource.error(throwable))));
+                .doOnSubscribe { deleteRamenLiveData.setValue(Resource.Loading()) }
+                .subscribe(
+                    {
+                        deleteRamenLiveData.setValue(Resource.Success(ramen))
+                    }
+                ) { throwable: Throwable ->
+                    deleteRamenLiveData.setValue(Resource.Error(throwable))
+                })
     }
-
-    public static class Factory implements ViewModelProvider.Factory {
-
-        private final RamenRepository ramenRepository;
-
-        public Factory(RamenRepository ramenRepository) {
-            this.ramenRepository = ramenRepository;
-        }
-
-        @NonNull
-        @Override
-        public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
-            //noinspection unchecked
-            return (T) new RamenListViewModel(ramenRepository);
-        }
-    }
-
 }

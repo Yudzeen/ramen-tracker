@@ -14,7 +14,8 @@
         android:theme="@style/Theme.RamenTracker">
         <activity
             android:name=".ui.MainActivity"
-            android:windowSoftInputMode="adjustResize">
+            android:windowSoftInputMode="adjustResize"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

@@ -1,23 +1,20 @@
-package ebj.yujinkun.ramentracker.data.files;
+package ebj.yujinkun.ramentracker.data.files
 
-import android.graphics.Bitmap;
+import android.graphics.Bitmap
+import io.reactivex.Single
 
-import io.reactivex.Single;
-
-public interface FileStorage {
-
+interface FileStorage {
     /**
      * Save bitmap
      * @param bitmap bitmap to save
      * @return String URI of saved location
      */
-    Single<String> saveBitmap(String id, Bitmap bitmap);
+    fun saveBitmap(id: String, bitmap: Bitmap): Single<String>
 
     /**
      * Loads bitmap of given URI
      * @param bitmapUri String URI of saved location
      * @return bitmap loaded
      */
-    Single<Bitmap> loadBitmap(String bitmapUri);
-
+    fun loadBitmap(bitmapUri: String): Single<Bitmap>
 }
