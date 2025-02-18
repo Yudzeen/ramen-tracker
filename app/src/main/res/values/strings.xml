@@ -1,24 +1,3 @@
 <resources>
     <string name="app_name">Ramen Tracker</string>
-
-    <string name="add">Add</string>
-    <string name="ramen">Ramen</string>
-    <string name="at_sign">\@</string>
-    <string name="favorite">Favorite</string>
-    <string name="image">Image</string>
-    <string name="shop_hint">Shop</string>
-    <string name="location_hint">Location</string>
-    <string name="ramen_name_hint">Ramen Name</string>
-    <string name="save">Save</string>
-    <string name="undo">Undo</string>
-    <string name="entry_deleted">Entry deleted</string>
-    <string name="comments_hint">Comments</string>
-    <string name="date_hint">Date</string>
-    <string name="delete">Delete</string>
-    <string name="add_photo">Add photo</string>
-    <string name="update_image">Update image</string>
-    <string name="cancel">Cancel</string>
-    <string name="ramen_image">Ramen image</string>
-    <string name="about">About</string>
-    <string name="save_changes">Save Changes</string>
 </resources>
